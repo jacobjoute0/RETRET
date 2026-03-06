@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- ── Meta ── -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="RETRET Hotel Admin – Manage Rooms" />
+  <title>Manage Rooms – RETRET Hotel Admin</title>
+  <meta name="robots" content="noindex, nofollow" />
+
+  <!-- ── Favicon ── -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔑</text></svg>" />
+
+  <!-- ── Google Fonts ── -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet" />
+
+  <!-- ── Shared CSS ── -->
+  <link rel="stylesheet" href="../css/style.css" />
+
+  <!-- ── Admin styles ── -->
+  <style>
+    .admin-wrapper    { display: flex; min-height: 100vh; }
+    .admin-sidebar    { width: 240px; background: var(--navy); padding: 2rem 1.5rem; flex-shrink: 0; }
+    .admin-main       { flex: 1; padding: 2.5rem; background: var(--gray); overflow-y: auto; }
+    .sidebar-brand    { color: var(--gold); font-family: 'Playfair Display', serif; font-size: 1.5rem; font-weight: 700; display: block; margin-bottom: 2.5rem; }
+    .sidebar-brand span { color: var(--white); }
+    .sidebar-nav      { list-style: none; }
+    .sidebar-nav li   { margin-bottom: 0.5rem; }
+    .sidebar-nav a    { display: flex; align-items: center; gap: 0.6rem; color: rgba(255,255,255,0.75); padding: 0.7rem 1rem; border-radius: var(--radius); transition: var(--transition); font-size: 0.95rem; }
+    .sidebar-nav a:hover,
+    .sidebar-nav a.active { background: rgba(201,168,76,0.15); color: var(--gold); }
+    .sidebar-divider  { height: 1px; background: rgba(255,255,255,0.1); margin: 1.5rem 0; }
+    .sidebar-signout  { background: none; border: 1px solid rgba(255,255,255,0.2); color: rgba(255,255,255,0.75); padding: 0.6rem 1rem; border-radius: var(--radius); cursor: pointer; width: 100%; text-align: left; font-size: 0.9rem; transition: var(--transition); }
+    .sidebar-signout:hover { background: rgba(255,255,255,0.08); color: var(--white); }
+    .admin-header     { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; }
+    .admin-header h1  { font-size: 1.8rem; color: var(--navy); }
+    .admin-card       { background: var(--white); border-radius: var(--radius); padding: 1.5rem; box-shadow: var(--shadow); }
+    .admin-table      { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+    .admin-table th   { text-align: left; padding: 0.7rem 1rem; background: var(--gray); color: var(--navy); font-weight: 700; border-bottom: 2px solid var(--gray-dark); }
+    .admin-table td   { padding: 0.75rem 1rem; border-bottom: 1px solid var(--gray-dark); vertical-align: middle; }
+    .admin-table tr:last-child td { border-bottom: none; }
+    .status-badge     { display: inline-block; padding: 0.2rem 0.65rem; border-radius: 999px; font-size: 0.78rem; font-weight: 700; }
+    .status-confirmed { background: #d1e7dd; color: #0f5132; }
+    .status-cancelled { background: #f8d7da; color: #842029; }
+    .status-pending   { background: #fff3cd; color: #856404; }
+    .table-actions    { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .btn-sm           { padding: 0.3rem 0.75rem; border-radius: var(--radius); border: none; cursor: pointer; font-size: 0.8rem; font-weight: 600; transition: var(--transition); }
+    .btn-edit         { background: var(--gold); color: var(--navy); }
+    .btn-edit:hover   { background: var(--gold-light); }
+    .btn-delete       { background: #dc3545; color: white; }
+    .btn-delete:hover { background: #c82333; }
+    .admin-alert      { display: none; padding: 0.9rem 1.2rem; border-radius: var(--radius); margin-bottom: 1.5rem; font-size: 0.95rem; font-weight: 500; }
+    .admin-alert.visible { display: block; }
+    .admin-alert-success { background: #d1e7dd; color: #0f5132; }
+    .admin-alert-error   { background: #f8d7da; color: #842029; }
+
+    /* ── Modal ── */
+    .modal-backdrop   { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 1000; align-items: flex-start; justify-content: center; overflow-y: auto; padding: 2rem 1rem; }
+    .modal-backdrop.visible { display: flex; }
+    .modal-box        { background: var(--white); border-radius: var(--radius); padding: 2rem; max-width: 600px; width: 100%; margin: auto; box-shadow: var(--shadow-lg); }
+    .modal-header     { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+    .modal-header h3  { color: var(--navy); }
+    .modal-close      { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-light); line-height: 1; padding: 0.2rem 0.5rem; }
+    .modal-close:hover { color: var(--navy); }
+    .modal-footer     { display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1.5rem; flex-wrap: wrap; }
+    .modal-cancel     { background: var(--gray); color: var(--text); border: none; padding: 0.6rem 1.2rem; border-radius: var(--radius); cursor: pointer; font-weight: 600; }
+    .modal-cancel:hover { background: var(--gray-dark); }
+
+    /* ── Room form inside modal ── */
+    .form-grid-2      { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .form-group label { display: block; font-weight: 600; font-size: 0.9rem; color: var(--navy); margin-bottom: 0.3rem; }
+    .form-group input,
+    .form-group textarea,
+    .form-group select { width: 100%; padding: 0.6rem 0.8rem; border: 1px solid var(--gray-dark); border-radius: var(--radius); font-size: 0.95rem; color: var(--text); font-family: inherit; }
+    .form-group textarea { resize: vertical; min-height: 80px; }
+    .form-check       { display: flex; align-items: center; gap: 0.5rem; }
+    .form-check input { width: auto; }
+    .form-check label { margin-bottom: 0; font-weight: normal; }
+    #roomImagePreview { max-width: 100%; border-radius: var(--radius); margin-top: 0.5rem; display: none; }
+    #authLoadingOverlay { display: flex; position: fixed; inset: 0; background: var(--navy); z-index: 9999; align-items: center; justify-content: center; color: var(--gold); font-size: 1.2rem; font-family: 'Playfair Display', serif; }
+
+    @media (max-width: 768px) {
+      .admin-wrapper  { flex-direction: column; }
+      .admin-sidebar  { width: 100%; padding: 1rem 1.5rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; }
+      .sidebar-brand  { margin-bottom: 0; }
+      .sidebar-nav    { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+      .sidebar-nav li { margin-bottom: 0; }
+      .admin-main     { padding: 1.5rem; }
+      .form-grid-2    { grid-template-columns: 1fr; }
+    }
+  </style>
+
+  <!-- ── Firebase CDN ── -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <!-- Storage SDK for image uploads -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+</head>
+<body>
+
+  <!-- Auth loading overlay -->
+  <div id="authLoadingOverlay" role="status" aria-live="polite">✦ Verifying access…</div>
+
+  <div class="admin-wrapper" id="adminContent" style="display:none;">
+
+    <!-- ── Sidebar ── -->
+    <aside class="admin-sidebar" role="navigation" aria-label="Admin navigation">
+      <a href="dashboard.html" class="sidebar-brand">RET<span>RET</span> Admin</a>
+      <ul class="sidebar-nav">
+        <li><a href="dashboard.html"><span class="icon">📊</span> Dashboard</a></li>
+        <li><a href="rooms.html" class="active" aria-current="page"><span class="icon">🛏️</span> Rooms</a></li>
+        <li><a href="bookings.html"><span class="icon">📅</span> Bookings</a></li>
+      </ul>
+      <div class="sidebar-divider"></div>
+      <a href="../index.html" style="color:rgba(255,255,255,0.6); font-size:0.85rem; display:block; margin-bottom:0.75rem;">← Back to website</a>
+      <button class="sidebar-signout" id="signOutBtn" type="button">Sign Out</button>
+    </aside>
+
+    <!-- ── Main ── -->
+    <main class="admin-main" role="main">
+
+      <div class="admin-header">
+        <h1>Manage Rooms</h1>
+        <!-- Add Room button opens the modal -->
+        <button class="btn btn-primary" id="addRoomBtn" type="button">+ Add Room</button>
+      </div>
+
+      <!-- Status alert -->
+      <div id="adminAlert" class="admin-alert" role="alert" aria-live="assertive"></div>
+
+      <!-- Rooms table -->
+      <div class="admin-card">
+        <div style="overflow-x:auto;">
+          <table class="admin-table" aria-label="Rooms management">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Price</th>
+                <th>Capacity</th>
+                <th>Available</th>
+                <th>Featured</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="roomsTableBody">
+              <tr><td colspan="6" style="text-align:center;padding:2rem;">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </main>
+  </div><!-- /.admin-wrapper -->
+
+  <!-- ══════════════════════════════════════════════════════════════
+       ADD / EDIT ROOM MODAL
+       ══════════════════════════════════════════════════════════════ -->
+  <div class="modal-backdrop" id="roomModal" role="dialog" aria-modal="true" aria-labelledby="roomModalTitle">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 id="roomModalTitle">Add New Room</h3>
+        <button class="modal-close" type="button" aria-label="Close modal">&times;</button>
+      </div>
+
+      <!-- Alert inside the modal (for form-level errors) -->
+      <div id="roomFormAlert" class="admin-alert" role="alert" aria-live="assertive"></div>
+
+      <!-- Room form -->
+      <form id="roomForm" novalidate aria-label="Room details form">
+
+        <!-- Row 1: Name + Price -->
+        <div class="form-grid-2" style="margin-bottom:1rem;">
+          <div class="form-group">
+            <label for="roomName">Room Name <span style="color:#e74c3c">*</span></label>
+            <input type="text" id="roomName" placeholder="Deluxe King Room" required />
+          </div>
+          <div class="form-group">
+            <label for="roomPrice">Price per Night (USD) <span style="color:#e74c3c">*</span></label>
+            <input type="number" id="roomPrice" placeholder="189" min="1" required />
+          </div>
+        </div>
+
+        <!-- Row 2: Capacity + Amenities -->
+        <div class="form-grid-2" style="margin-bottom:1rem;">
+          <div class="form-group">
+            <label for="roomCapacity">Max Capacity (guests) <span style="color:#e74c3c">*</span></label>
+            <input type="number" id="roomCapacity" placeholder="2" min="1" max="20" required />
+          </div>
+          <div class="form-group">
+            <label for="roomAmenities">Amenities (comma-separated)</label>
+            <input type="text" id="roomAmenities" placeholder="King Bed, Free WiFi, Smart TV" />
+          </div>
+        </div>
+
+        <!-- Description (full-width) -->
+        <div class="form-group" style="margin-bottom:1rem;">
+          <label for="roomDescription">Description</label>
+          <textarea id="roomDescription" rows="3" placeholder="Short description of the room…"></textarea>
+        </div>
+
+        <!-- Image URL (full-width) -->
+        <div class="form-group" style="margin-bottom:0.75rem;">
+          <label for="roomImage">Image URL</label>
+          <input type="url" id="roomImage" placeholder="https://images.unsplash.com/…" />
+          <!-- Preview of the current image -->
+          <img id="roomImagePreview" alt="Room image preview" />
+        </div>
+
+        <!-- Image upload (optional — requires Firebase Storage) -->
+        <div class="form-group" style="margin-bottom:1rem;">
+          <label for="roomImageFile">Or Upload Image</label>
+          <div style="display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap;">
+            <input type="file" id="roomImageFile" accept="image/*" onchange="uploadRoomImage(event)" style="flex:1;" />
+            <button type="button" id="uploadImageBtn" class="btn-sm btn-edit" onclick="document.getElementById('roomImageFile').click()">Upload Image</button>
+          </div>
+          <span id="uploadProgress" style="font-size:0.82rem; color:var(--text-light); display:none;"></span>
+        </div>
+
+        <!-- Toggles: Available + Featured -->
+        <div style="display:flex; gap:2rem; margin-bottom:1.2rem; flex-wrap:wrap;">
+          <div class="form-check">
+            <input type="checkbox" id="roomAvailable" checked />
+            <label for="roomAvailable">Available for booking</label>
+          </div>
+          <div class="form-check">
+            <input type="checkbox" id="roomFeatured" />
+            <label for="roomFeatured">Feature on home page</label>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="modal-cancel">Cancel</button>
+          <button type="submit" id="saveRoomBtn" class="btn btn-primary">Save Room</button>
+        </div>
+
+      </form>
+    </div>
+  </div><!-- /#roomModal -->
+
+  <!-- ── Scripts ── -->
+  <script src="../js/firebase-config.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="admin.js"></script>
+
+  <script>
+    /* ── Bootstrap ── */
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('signOutBtn').addEventListener('click', () => {
+        signOut('../index.html');
+      });
+
+      requireAdminAuth((user) => {
+        document.getElementById('adminContent').style.display = 'flex';
+        initAdminRooms(user);
+      }, 'login.html');
+    });
+  </script>
+
+</body>
+</html>

@@ -11,10 +11,13 @@ A complete, responsive hotel booking and information website built with HTML, CS
 - 🛏️ Room listings loaded from Firestore (with sample-data fallback)
 - 📅 Online booking form with full client-side validation
 - 📧 Contact form with Firestore message storage
-- ⚡ Firebase Hosting, Firestore, and Cloud Functions
+- ⚡ Firebase Hosting, Firestore, Cloud Functions, and Authentication
 - ♿ Accessibility attributes throughout (ARIA roles, aria-expanded, aria-current)
 - 📱 Mobile-responsive with hamburger navigation
-- 🔒 Firestore Security Rules with field validation and size limits
+- 🔒 Firestore Security Rules with admin role-based access control
+- 🔑 Admin dashboard with room management, bookings, and image upload
+- 💳 Payment processing service (Stripe-ready placeholder)
+- 📨 Booking confirmation emails via nodemailer (configurable SMTP)
 
 ---
 
@@ -26,7 +29,9 @@ A complete, responsive hotel booking and information website built with HTML, CS
 | Database  | Firebase Firestore (NoSQL)                      |
 | Hosting   | Firebase Hosting                                |
 | Backend   | Firebase Cloud Functions (Node.js 18)           |
-| Auth      | Firebase Admin SDK (service-account free)       |
+| Auth      | Firebase Authentication                         |
+| Storage   | Firebase Storage (admin image upload)           |
+| Email     | Nodemailer (configurable SMTP)                  |
 
 ---
 
@@ -37,7 +42,7 @@ RETRET/
 ├── .firebaserc                  ← Firebase project alias
 ├── .gitignore
 ├── firebase.json                ← Hosting, Firestore, Functions config
-├── firestore.rules              ← Firestore Security Rules
+├── firestore.rules              ← Firestore Security Rules (role-based)
 ├── README.md
 │
 ├── config/
@@ -46,7 +51,8 @@ RETRET/
 ├── functions/
 │   ├── index.js                 ← Cloud Function entry point
 │   ├── bookingService.js        ← Booking validation & Firestore writes
-│   ├── notificationService.js   ← Logging & notification helpers
+│   ├── notificationService.js   ← Logging & nodemailer email confirmation
+│   ├── paymentService.js        ← Payment processing (Stripe-ready)
 │   └── package.json
 │
 └── public/
@@ -54,6 +60,12 @@ RETRET/
     ├── rooms.html               ← Rooms & Suites listing
     ├── booking.html             ← Reservation form
     ├── contact.html             ← Contact page
+    ├── admin/
+    │   ├── login.html           ← Admin sign-in page
+    │   ├── dashboard.html       ← Admin dashboard (stats + recent bookings)
+    │   ├── rooms.html           ← Admin room management (CRUD + image upload)
+    │   ├── bookings.html        ← Admin bookings management (view/cancel)
+    │   └── admin.js             ← Admin CRUD operations
     ├── components/
     │   ├── navbar.html          ← Reusable navbar partial
     │   └── footer.html          ← Reusable footer partial
@@ -62,6 +74,7 @@ RETRET/
     ├── images/                  ← Static images (add your own)
     └── js/
         ├── firebase-config.js   ← Firebase SDK init (client-side)
+        ├── auth.js              ← Firebase Auth helpers (signIn, isAdmin, guard)
         ├── ui.js                ← Shared UI helpers (components, nav, scroll)
         ├── rooms.js             ← Room card rendering & Firestore loader
         └── booking.js           ← Booking form logic
@@ -95,10 +108,12 @@ cd ..
 
 1. Go to [Firebase Console](https://console.firebase.google.com/) and create a project.
 2. Enable **Firestore Database** (Build → Firestore Database).
-3. Enable **Hosting** (Build → Hosting).
-4. Enable **Functions** (Build → Functions).
-5. Register a **Web App** (Project Settings → Your apps → Add app).
-6. Copy the `firebaseConfig` values into `public/js/firebase-config.js`.
+3. Enable **Authentication** (Build → Authentication → Sign-in method → Email/Password).
+4. Enable **Hosting** (Build → Hosting).
+5. Enable **Functions** (Build → Functions).
+6. Enable **Storage** (Build → Storage) – required for admin image uploads.
+7. Register a **Web App** (Project Settings → Your apps → Add app).
+8. Copy the `firebaseConfig` values into `public/js/firebase-config.js`.
 
 ### 4. Log in and initialise
 
@@ -106,6 +121,66 @@ cd ..
 firebase login
 firebase use --add   # select your project (or edit .firebaserc manually)
 ```
+
+---
+
+## Admin Dashboard Setup
+
+### Creating an Admin User
+
+1. In the [Firebase Console](https://console.firebase.google.com/), go to **Authentication → Users**.
+2. Click **Add user** and enter the admin email and password.
+3. Copy the **UID** shown for that user.
+4. Go to **Firestore Database** and create a document:
+   - Collection: `users`
+   - Document ID: `<paste the UID from step 3>`
+   - Fields:
+     ```
+     name:  string  "Admin Name"
+     email: string  "admin@example.com"
+     role:  string  "admin"
+     ```
+5. Navigate to `https://your-site.web.app/admin/login.html` and sign in.
+
+---
+
+## Email Configuration (nodemailer)
+
+Set SMTP credentials as Firebase Function config values:
+
+```bash
+firebase functions:config:set \
+  email.host="smtp.gmail.com" \
+  email.port="465" \
+  email.user="your-gmail@gmail.com" \
+  email.pass="your-app-password" \
+  email.from="RETRET Hotel <noreply@retret.com>"
+```
+
+For Gmail, generate an **App Password** at:
+https://myaccount.google.com/apppasswords
+
+Then redeploy functions:
+
+```bash
+firebase deploy --only functions
+```
+
+If email credentials are not configured, the system falls back to structured logging (visible in Firebase Console → Functions → Logs).
+
+---
+
+## Payment Integration (Stripe)
+
+The `functions/paymentService.js` file contains a Stripe-ready placeholder. To enable real payments:
+
+1. Install the Stripe SDK: `cd functions && npm install stripe`
+2. Set your Stripe secret key:
+   ```bash
+   firebase functions:config:set stripe.secret_key="sk_live_..."
+   ```
+3. Follow the commented-out Stripe code in `paymentService.js`.
+4. Redeploy: `firebase deploy --only functions`
 
 ---
 
@@ -141,7 +216,7 @@ cd functions && npm run serve
 
 ## Firestore Database Schema
 
-### `rooms` collection (managed via console)
+### `rooms` collection (managed via admin dashboard or console)
 
 | Field       | Type     | Description                          |
 |-------------|----------|--------------------------------------|
@@ -154,29 +229,49 @@ cd functions && npm run serve
 | featured    | boolean  | Show on home page featured section   |
 | available   | boolean  | Room is bookable                     |
 
-### `bookings` collection (created by booking form)
+### `bookings` collection (created by booking form or Cloud Function)
 
-| Field     | Type      | Description                          |
-|-----------|-----------|--------------------------------------|
-| name      | string    | Guest full name                      |
-| email     | string    | Guest email (lowercased)             |
-| phone     | string    | Guest phone number                   |
-| room      | string    | Selected room name                   |
-| checkin   | string    | Check-in date (YYYY-MM-DD)           |
-| checkout  | string    | Check-out date (YYYY-MM-DD)          |
-| guests    | integer   | Number of guests (1–10)              |
-| status    | string    | pending / confirmed / cancelled      |
-| createdAt | timestamp | Server-side creation time            |
+| Field       | Type      | Description                          |
+|-------------|-----------|--------------------------------------|
+| name        | string    | Guest full name                      |
+| email       | string    | Guest email (lowercased)             |
+| phone       | string    | Guest phone number                   |
+| room        | string    | Selected room name                   |
+| checkin     | string    | Check-in date (YYYY-MM-DD)           |
+| checkout    | string    | Check-out date (YYYY-MM-DD)          |
+| guests      | integer   | Number of guests (1–10)              |
+| status      | string    | pending / confirmed / cancelled      |
+| paymentId   | string    | Reference to payments document       |
+| createdAt   | timestamp | Server-side creation time            |
+
+### `users` collection (managed via admin or Firebase Console)
+
+| Field  | Type   | Description                    |
+|--------|--------|--------------------------------|
+| name   | string | User display name              |
+| email  | string | User email                     |
+| role   | string | "admin" or "user"              |
 
 ### `messages` collection (created by contact form)
 
-| Field   | Type      | Description              |
-|---------|-----------|--------------------------|
-| name    | string    | Sender's name            |
-| email   | string    | Sender's email           |
-| subject | string    | Message subject          |
-| message | string    | Message body             |
-| timestamp | timestamp | Creation time          |
+| Field     | Type      | Description              |
+|-----------|-----------|--------------------------|
+| name      | string    | Sender's name            |
+| email     | string    | Sender's email           |
+| subject   | string    | Message subject          |
+| message   | string    | Message body             |
+| timestamp | timestamp | Creation time            |
+
+### `payments` collection (created by Cloud Function)
+
+| Field         | Type      | Description                          |
+|---------------|-----------|--------------------------------------|
+| bookingId     | string    | Reference to bookings document       |
+| amount        | number    | Payment amount (USD)                 |
+| currency      | string    | ISO currency code (default: "usd")   |
+| status        | string    | "paid" / "failed"                    |
+| transactionId | string    | Payment processor transaction ID     |
+| createdAt     | timestamp | Server-side creation time            |
 
 ---
 

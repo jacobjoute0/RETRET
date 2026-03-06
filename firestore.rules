@@ -3,13 +3,24 @@
 // Firestore Security Rules for the RETRET Hotel website.
 //
 // OVERVIEW:
+//   - Authenticated users with role == "admin" have full read/write
+//     access to all collections (managed via Firestore users/{uid}.role).
 //   - Anyone (including unauthenticated visitors) can read the "rooms"
 //     collection so the website can display available rooms.
 //   - Anyone can CREATE a booking document (public write).
 //     Reading existing bookings is restricted to prevent guests
 //     from viewing other guests' reservation details.
 //   - Anyone can CREATE a contact message.
+//   - Admin users can read and manage bookings, rooms, and messages.
 //   - All other operations are denied by default.
+//
+// ADMIN SETUP:
+//   To grant a user admin access:
+//   1. Create the user via Firebase Authentication.
+//   2. In the Firebase Console (Firestore), add a document to the
+//      "users" collection with the user's UID as the document ID:
+//        { name: "Admin Name", email: "admin@retret.com", role: "admin" }
+//   3. The user can now sign into the /admin/login.html page.
 //
 // DEPLOY:
 //   firebase deploy --only firestore:rules
@@ -20,19 +31,34 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    // ── Helper: check if the requesting user is an admin ──────────
+    // Reads the "users" collection document for the authenticated user
+    // and checks that the role field equals "admin".
+    function isAdmin() {
+      return request.auth != null
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // ── Helper: check if user is authenticated ────────────────────
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
     // ── rooms collection ──────────────────────────────────────────
     // Public read access so room listings are visible to all visitors.
-    // Write access is locked down (only via Admin SDK / console).
+    // Write access is restricted to admins only.
     match /rooms/{roomId} {
-      allow read: if true;         // Anyone can read room documents
-      allow write: if false;       // No public writes – managed via console
+      allow read:   if true;      // Anyone can read room documents
+      allow write:  if isAdmin(); // Only admins can create/update/delete rooms
     }
 
     // ── bookings collection ───────────────────────────────────────
     // Anyone can submit a new booking (create).
-    // Reading individual bookings is prohibited for privacy.
-    // Update/delete is also prohibited publicly.
+    // Reading and managing bookings is restricted to admins for privacy.
+    // Users cannot read other users' bookings.
     match /bookings/{bookingId} {
+      // Public booking creation with field validation
       allow create: if
         // Ensure all required fields are present (no missing required data)
         request.resource.data.keys().hasAll(['name', 'email', 'phone', 'room', 'checkin', 'checkout', 'guests']) &&
@@ -58,12 +84,13 @@ service cloud.firestore {
         request.resource.data.guests   > 0       &&
         request.resource.data.guests   <= 10;
 
-      allow read, update, delete: if false;  // Deny public read/update/delete
+      // Admins can read, update, and delete bookings
+      allow read, update, delete: if isAdmin();
     }
 
     // ── messages collection ───────────────────────────────────────
     // Anyone can submit a contact message (create).
-    // Reading messages is restricted to admins only (via Admin SDK).
+    // Admins can read and manage messages.
     match /messages/{messageId} {
       allow create: if
         // Ensure all required fields are present
@@ -81,7 +108,25 @@ service cloud.firestore {
         request.resource.data.subject.size() < 300  &&
         request.resource.data.message.size() < 5000;
 
-      allow read, update, delete: if false;  // Admin-only via backend
+      // Admins can read and manage messages
+      allow read, update, delete: if isAdmin();
+    }
+
+    // ── users collection ──────────────────────────────────────────
+    // Users can read their own profile document.
+    // Admins can read and manage all user documents.
+    // User documents are created/updated via Firebase Admin SDK only.
+    match /users/{userId} {
+      allow read:  if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+      allow write: if isAdmin(); // Only admins can create/update user role documents
+    }
+
+    // ── payments collection ───────────────────────────────────────
+    // Payment records are created by Cloud Functions (Admin SDK).
+    // Only admins can read payment records.
+    match /payments/{paymentId} {
+      allow read:  if isAdmin();
+      allow write: if false; // Managed exclusively by Cloud Functions
     }
 
     // ── Catch-all: deny everything else ──────────────────────────

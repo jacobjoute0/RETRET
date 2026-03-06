@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- ── Meta ── -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="RETRET Hotel Admin – Sign In" />
+  <title>Admin Login – RETRET Hotel</title>
+  <meta name="robots" content="noindex, nofollow" />
+
+  <!-- ── Favicon ── -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔑</text></svg>" />
+
+  <!-- ── Google Fonts ── -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet" />
+
+  <!-- ── Shared CSS ── -->
+  <link rel="stylesheet" href="../css/style.css" />
+
+  <style>
+    /* ── Login page layout ── */
+    body               { background: var(--navy); display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 1rem; }
+    .login-card        { background: var(--white); border-radius: var(--radius); padding: 3rem 2.5rem; max-width: 440px; width: 100%; box-shadow: var(--shadow-lg); }
+    .login-logo        { text-align: center; margin-bottom: 1.5rem; }
+    .login-logo a      { font-family: 'Playfair Display', serif; font-size: 2rem; font-weight: 700; color: var(--navy); text-decoration: none; }
+    .login-logo a span { color: var(--gold); }
+    .login-card h2     { text-align: center; font-size: 1.4rem; color: var(--navy); margin-bottom: 0.25rem; }
+    .login-card .sub   { text-align: center; color: var(--text-light); font-size: 0.9rem; margin-bottom: 2rem; }
+    .form-group        { margin-bottom: 1.2rem; }
+    .form-group label  { display: block; font-weight: 600; font-size: 0.9rem; color: var(--navy); margin-bottom: 0.35rem; }
+    .form-group input  { width: 100%; padding: 0.7rem 1rem; border: 1px solid var(--gray-dark); border-radius: var(--radius); font-size: 1rem; color: var(--text); transition: var(--transition); }
+    .form-group input:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 0 3px rgba(201,168,76,0.15); }
+    .login-btn         { width: 100%; padding: 0.85rem; background: var(--gold); color: var(--navy); border: none; border-radius: var(--radius); font-size: 1rem; font-weight: 700; cursor: pointer; transition: var(--transition); display: flex; align-items: center; justify-content: center; gap: 0.5rem; }
+    .login-btn:hover   { background: var(--gold-light); }
+    .login-btn:disabled { opacity: 0.7; cursor: not-allowed; }
+    .login-alert       { padding: 0.85rem 1rem; border-radius: var(--radius); margin-bottom: 1.2rem; font-size: 0.9rem; display: none; }
+    .login-alert.visible { display: block; }
+    .login-alert-error { background: #f8d7da; color: #842029; }
+    .back-link         { display: block; text-align: center; margin-top: 1.5rem; color: var(--text-light); font-size: 0.88rem; }
+    .back-link a       { color: var(--gold); font-weight: 600; }
+  </style>
+
+  <!-- ── Firebase CDN ── -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+
+  <div class="login-card">
+
+    <!-- Brand -->
+    <div class="login-logo">
+      <a href="../index.html">RET<span>RET</span> Hotel</a>
+    </div>
+
+    <h2>Admin Sign In</h2>
+    <p class="sub">Authorised staff only</p>
+
+    <!-- Login error alert -->
+    <div id="loginAlert" class="login-alert login-alert-error" role="alert" aria-live="assertive"></div>
+
+    <!-- Sign-in form -->
+    <form id="loginForm" novalidate aria-label="Admin login form">
+
+      <div class="form-group">
+        <label for="loginEmail">Email Address</label>
+        <input
+          type="email"
+          id="loginEmail"
+          placeholder="admin@retret.com"
+          autocomplete="email"
+          aria-required="true"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="loginPassword">Password</label>
+        <input
+          type="password"
+          id="loginPassword"
+          placeholder="••••••••"
+          autocomplete="current-password"
+          aria-required="true"
+        />
+      </div>
+
+      <button type="submit" class="login-btn" id="loginBtn">
+        <span id="loginBtnText">Sign In</span>
+        <!-- Spinner shown during async auth -->
+        <span id="loginSpinner" style="display:none;">…</span>
+      </button>
+
+    </form>
+
+    <p class="back-link">
+      <a href="../index.html">← Return to hotel website</a>
+    </p>
+
+  </div><!-- /.login-card -->
+
+  <!-- ── Scripts ── -->
+  <!-- Firebase config initialises firebase, db, and isFirebaseConfigured -->
+  <script src="../js/firebase-config.js"></script>
+  <!-- Auth helpers (signIn, requireAdminAuth, etc.) -->
+  <script src="../js/auth.js"></script>
+
+  <script>
+    /* ── Admin login page logic ── */
+    document.addEventListener('DOMContentLoaded', () => {
+      const form    = document.getElementById('loginForm');
+      const alertEl = document.getElementById('loginAlert');
+      const btn     = document.getElementById('loginBtn');
+      const spinner = document.getElementById('loginSpinner');
+      const btnText = document.getElementById('loginBtnText');
+
+      // If user is already signed in as admin, redirect to dashboard
+      auth.onAuthStateChanged(async (user) => {
+        if (user) {
+          const adminOk = await isAdmin(user);
+          if (adminOk) {
+            window.location.href = 'dashboard.html';
+          }
+        }
+      });
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const email    = document.getElementById('loginEmail').value.trim();
+        const password = document.getElementById('loginPassword').value;
+
+        // Basic validation
+        alertEl.classList.remove('visible');
+        if (!email || !password) {
+          alertEl.textContent = 'Please enter both email and password.';
+          alertEl.classList.add('visible');
+          return;
+        }
+
+        // Show loading state
+        btn.disabled  = true;
+        btnText.textContent = 'Signing in…';
+        spinner.style.display = 'inline';
+
+        try {
+          // Sign in with Firebase Auth
+          const credential = await signIn(email, password);
+
+          // Verify the user has admin role in Firestore
+          const adminOk = await isAdmin(credential.user);
+          if (!adminOk) {
+            // Authenticated but not an admin — sign them back out
+            await auth.signOut();
+            alertEl.textContent = 'Access denied. This account does not have admin privileges.';
+            alertEl.classList.add('visible');
+            return;
+          }
+
+          // Success — navigate to dashboard
+          window.location.href = 'dashboard.html';
+
+        } catch (err) {
+          console.error('Admin login error:', err);
+
+          // Provide user-friendly error messages
+          let msg = 'Sign-in failed. Please check your credentials and try again.';
+          if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password') {
+            msg = 'Incorrect email or password.';
+          } else if (err.code === 'auth/too-many-requests') {
+            msg = 'Too many failed attempts. Please wait a moment and try again.';
+          } else if (err.code === 'auth/network-request-failed') {
+            msg = 'Network error. Please check your internet connection.';
+          }
+
+          alertEl.textContent = msg;
+          alertEl.classList.add('visible');
+
+        } finally {
+          btn.disabled  = false;
+          btnText.textContent = 'Sign In';
+          spinner.style.display = 'none';
+        }
+      });
+    });
+  </script>
+
+</body>
+</html>

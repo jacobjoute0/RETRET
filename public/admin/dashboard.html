@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- ── Meta ── -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="RETRET Hotel Admin – Dashboard" />
+  <title>Admin Dashboard – RETRET Hotel</title>
+  <!-- Prevent search engines from indexing admin pages -->
+  <meta name="robots" content="noindex, nofollow" />
+
+  <!-- ── Favicon ── -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔑</text></svg>" />
+
+  <!-- ── Google Fonts ── -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet" />
+
+  <!-- ── Shared CSS (relative path from admin/) ── -->
+  <link rel="stylesheet" href="../css/style.css" />
+
+  <!-- ── Admin-specific styles ── -->
+  <style>
+    /* ── Admin layout ── */
+    .admin-wrapper    { display: flex; min-height: 100vh; }
+    .admin-sidebar    { width: 240px; background: var(--navy); padding: 2rem 1.5rem; flex-shrink: 0; }
+    .admin-main       { flex: 1; padding: 2.5rem; background: var(--gray); overflow-y: auto; }
+    .sidebar-brand    { color: var(--gold); font-family: 'Playfair Display', serif; font-size: 1.5rem; font-weight: 700; display: block; margin-bottom: 2.5rem; }
+    .sidebar-brand span { color: var(--white); }
+    .sidebar-nav      { list-style: none; }
+    .sidebar-nav li   { margin-bottom: 0.5rem; }
+    .sidebar-nav a    { display: flex; align-items: center; gap: 0.6rem; color: rgba(255,255,255,0.75); padding: 0.7rem 1rem; border-radius: var(--radius); transition: var(--transition); font-size: 0.95rem; }
+    .sidebar-nav a:hover,
+    .sidebar-nav a.active { background: rgba(201,168,76,0.15); color: var(--gold); }
+    .sidebar-nav .icon { font-size: 1.1rem; }
+    .sidebar-divider  { height: 1px; background: rgba(255,255,255,0.1); margin: 1.5rem 0; }
+    .sidebar-signout  { background: none; border: 1px solid rgba(255,255,255,0.2); color: rgba(255,255,255,0.75); padding: 0.6rem 1rem; border-radius: var(--radius); cursor: pointer; width: 100%; text-align: left; font-size: 0.9rem; transition: var(--transition); }
+    .sidebar-signout:hover { background: rgba(255,255,255,0.08); color: var(--white); }
+
+    /* ── Admin header ── */
+    .admin-header     { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+    .admin-header h1  { font-size: 1.8rem; color: var(--navy); }
+    .admin-user       { font-size: 0.9rem; color: var(--text-light); }
+
+    /* ── Stat cards ── */
+    .stat-grid        { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1.5rem; margin-bottom: 2.5rem; }
+    .stat-card        { background: var(--white); border-radius: var(--radius); padding: 1.5rem; box-shadow: var(--shadow); border-left: 4px solid var(--gold); }
+    .stat-card .label { font-size: 0.85rem; color: var(--text-light); margin-bottom: 0.4rem; }
+    .stat-card .value { font-size: 2.2rem; font-weight: 700; color: var(--navy); font-family: 'Playfair Display', serif; }
+
+    /* ── Quick links ── */
+    .quick-links      { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 2rem; }
+
+    /* ── Data table ── */
+    .admin-card       { background: var(--white); border-radius: var(--radius); padding: 1.5rem; box-shadow: var(--shadow); }
+    .admin-card h2    { font-size: 1.2rem; margin-bottom: 1.2rem; color: var(--navy); }
+    .admin-table      { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+    .admin-table th   { text-align: left; padding: 0.7rem 1rem; background: var(--gray); color: var(--navy); font-weight: 700; border-bottom: 2px solid var(--gray-dark); }
+    .admin-table td   { padding: 0.75rem 1rem; border-bottom: 1px solid var(--gray-dark); vertical-align: middle; }
+    .admin-table tr:last-child td { border-bottom: none; }
+    .admin-table tr:hover td      { background: #fafafa; }
+
+    /* ── Status badges ── */
+    .status-badge     { display: inline-block; padding: 0.2rem 0.65rem; border-radius: 999px; font-size: 0.78rem; font-weight: 700; text-transform: capitalize; }
+    .status-pending   { background: #fff3cd; color: #856404; }
+    .status-confirmed { background: #d1e7dd; color: #0f5132; }
+    .status-cancelled { background: #f8d7da; color: #842029; }
+
+    /* ── Admin alert ── */
+    .admin-alert      { display: none; padding: 0.9rem 1.2rem; border-radius: var(--radius); margin-bottom: 1.5rem; font-size: 0.95rem; font-weight: 500; }
+    .admin-alert.visible { display: block; }
+    .admin-alert-success { background: #d1e7dd; color: #0f5132; }
+    .admin-alert-error   { background: #f8d7da; color: #842029; }
+    .admin-alert-info    { background: #cff4fc; color: #055160; }
+
+    /* ── Auth loading overlay ── */
+    #authLoadingOverlay { display: flex; position: fixed; inset: 0; background: var(--navy); z-index: 9999; align-items: center; justify-content: center; color: var(--gold); font-size: 1.2rem; font-family: 'Playfair Display', serif; }
+
+    /* ── Responsive ── */
+    @media (max-width: 768px) {
+      .admin-wrapper  { flex-direction: column; }
+      .admin-sidebar  { width: 100%; padding: 1rem 1.5rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; }
+      .sidebar-brand  { margin-bottom: 0; }
+      .sidebar-nav    { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+      .sidebar-nav li { margin-bottom: 0; }
+      .admin-main     { padding: 1.5rem; }
+    }
+  </style>
+
+  <!-- ── Firebase CDN (compat v9) ── -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+
+  <!-- Auth loading overlay – hidden once admin access is verified -->
+  <div id="authLoadingOverlay" role="status" aria-live="polite">
+    ✦ Verifying access…
+  </div>
+
+  <!-- ── Admin wrapper (hidden until auth check passes) ── -->
+  <div class="admin-wrapper" id="adminContent" style="display:none;">
+
+    <!-- ── Sidebar ── -->
+    <aside class="admin-sidebar" role="navigation" aria-label="Admin navigation">
+      <a href="dashboard.html" class="sidebar-brand">RET<span>RET</span> Admin</a>
+      <ul class="sidebar-nav">
+        <li>
+          <a href="dashboard.html" class="active" aria-current="page">
+            <span class="icon" aria-hidden="true">📊</span> Dashboard
+          </a>
+        </li>
+        <li>
+          <a href="rooms.html">
+            <span class="icon" aria-hidden="true">🛏️</span> Rooms
+          </a>
+        </li>
+        <li>
+          <a href="bookings.html">
+            <span class="icon" aria-hidden="true">📅</span> Bookings
+          </a>
+        </li>
+      </ul>
+      <div class="sidebar-divider"></div>
+      <a href="../index.html" style="color:rgba(255,255,255,0.6); font-size:0.85rem; display:block; margin-bottom:0.75rem;">
+        ← Back to website
+      </a>
+      <!-- Sign-out button wired up in DOMContentLoaded -->
+      <button class="sidebar-signout" id="signOutBtn" type="button">Sign Out</button>
+    </aside>
+
+    <!-- ── Main content ── -->
+    <main class="admin-main" role="main">
+
+      <!-- Page header -->
+      <div class="admin-header">
+        <h1>Dashboard</h1>
+        <span class="admin-user">
+          Signed in as <strong id="adminUserName">…</strong>
+        </span>
+      </div>
+
+      <!-- Status alert -->
+      <div id="adminAlert" class="admin-alert" role="alert" aria-live="assertive"></div>
+
+      <!-- ── Stat cards ── -->
+      <div class="stat-grid" aria-label="Hotel statistics">
+        <div class="stat-card">
+          <div class="label">Total Rooms</div>
+          <div class="value" id="statTotalRooms">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">Total Bookings</div>
+          <div class="value" id="statTotalBookings">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">Pending Bookings</div>
+          <div class="value" id="statPending">—</div>
+        </div>
+      </div>
+
+      <!-- ── Quick action links ── -->
+      <div class="quick-links">
+        <a href="rooms.html"    class="btn btn-primary">Manage Rooms</a>
+        <a href="bookings.html" class="btn btn-outline">View All Bookings</a>
+      </div>
+
+      <!-- ── Recent bookings table ── -->
+      <div class="admin-card">
+        <h2>Recent Bookings (last 10)</h2>
+        <div style="overflow-x:auto;">
+          <table class="admin-table" aria-label="Recent bookings">
+            <thead>
+              <tr>
+                <th>Guest</th>
+                <th>Room</th>
+                <th>Check-in</th>
+                <th>Check-out</th>
+                <th>Guests</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="recentBookingsBody">
+              <tr>
+                <td colspan="6" style="text-align:center;padding:2rem;">Loading…</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </main>
+  </div><!-- /.admin-wrapper -->
+
+  <!-- ── Scripts ── -->
+  <!-- Firebase config initialises `db` and `isFirebaseConfigured` -->
+  <script src="../js/firebase-config.js"></script>
+  <!-- Auth helpers (signIn, signOut, requireAdminAuth, isAdmin) -->
+  <script src="../js/auth.js"></script>
+  <!-- Admin CRUD operations (initDashboard, etc.) -->
+  <script src="admin.js"></script>
+
+  <script>
+    /* ── Bootstrap admin page ── */
+    document.addEventListener('DOMContentLoaded', () => {
+      // Wire up sign-out button
+      document.getElementById('signOutBtn').addEventListener('click', () => {
+        signOut('../index.html');
+      });
+
+      // Guard: require admin role → on success, initialise dashboard
+      requireAdminAuth((user) => {
+        // Show admin UI now that auth is confirmed
+        document.getElementById('adminContent').style.display = 'flex';
+        // Load dashboard data
+        initDashboard(user);
+      }, 'login.html');
+    });
+  </script>
+
+</body>
+</html>
