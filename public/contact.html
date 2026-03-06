@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- ── Meta ── -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Contact RETRET Hotel – get in touch with our team for reservations and inquiries." />
+  <title>Contact Us – RETRET Hotel</title>
+
+  <!-- ── Favicon ── -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏨</text></svg>" />
+
+  <!-- ── Google Fonts ── -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet" />
+
+  <!-- ── Main CSS ── -->
+  <link rel="stylesheet" href="css/style.css" />
+
+  <!-- ── Firebase CDN ── -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+
+  <!-- ══════════════════════════════════════════════════════════════
+       NAVIGATION
+       ══════════════════════════════════════════════════════════════ -->
+  <nav class="navbar scrolled" id="navbar" role="navigation" aria-label="Main navigation">
+    <div class="container">
+      <a href="index.html" class="navbar-brand" aria-label="RETRET Hotel Home">RET<span>RET</span></a>
+
+      <ul class="nav-links" id="navLinks" role="list">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="rooms.html">Rooms</a></li>
+        <li><a href="booking.html">Booking</a></li>
+        <li><a href="contact.html" class="active" aria-current="page">Contact</a></li>
+      </ul>
+
+      <button
+        class="nav-toggle"
+        id="navToggle"
+        aria-label="Toggle navigation menu"
+        aria-expanded="false"
+        aria-controls="navLinks"
+      >
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ══════════════════════════════════════════════════════════════
+       PAGE HEADER
+       ══════════════════════════════════════════════════════════════ -->
+  <header class="page-header" role="banner">
+    <div class="container">
+      <h1>Contact Us</h1>
+      <p class="breadcrumb">
+        <a href="index.html">Home</a> &rsaquo; Contact
+      </p>
+    </div>
+  </header>
+
+  <!-- ══════════════════════════════════════════════════════════════
+       CONTACT SECTION
+       ══════════════════════════════════════════════════════════════ -->
+  <section class="contact-section section-padding" aria-label="Contact information and form">
+    <div class="container">
+
+      <p class="section-subtitle">Get in Touch</p>
+      <h2 class="section-title">We'd Love to Hear From You</h2>
+      <p class="section-description">
+        Whether you have a question about our rooms, facilities, or special events,
+        our team is ready to assist you.
+      </p>
+
+      <div class="contact-grid">
+
+        <!-- ── Left: Contact information panel ── -->
+        <aside class="contact-info-card" aria-label="Hotel contact details">
+          <h3>Contact Information</h3>
+          <p>Reach out through any of the channels below. We respond within 2 business hours.</p>
+
+          <div class="contact-item">
+            <span class="contact-icon" aria-hidden="true">📍</span>
+            <div>
+              <h5>Our Address</h5>
+              <p>123 Grand Boulevard<br />City Centre, Metropolis 10001</p>
+            </div>
+          </div>
+
+          <div class="contact-item">
+            <span class="contact-icon" aria-hidden="true">📞</span>
+            <div>
+              <h5>Phone</h5>
+              <p>
+                Reservations: <a href="tel:+15551234567" style="color:var(--gold);">+1 (555) 123-4567</a><br />
+                Concierge: <a href="tel:+15559876543" style="color:var(--gold);">+1 (555) 987-6543</a>
+              </p>
+            </div>
+          </div>
+
+          <div class="contact-item">
+            <span class="contact-icon" aria-hidden="true">✉️</span>
+            <div>
+              <h5>Email</h5>
+              <p>
+                <a href="mailto:reservations@retret.com" style="color:var(--gold);">reservations@retret.com</a><br />
+                <a href="mailto:info@retret.com" style="color:var(--gold);">info@retret.com</a>
+              </p>
+            </div>
+          </div>
+
+          <div class="contact-item">
+            <span class="contact-icon" aria-hidden="true">🕐</span>
+            <div>
+              <h5>Opening Hours</h5>
+              <p>
+                Front Desk: 24 hours / 7 days<br />
+                Reservations: Mon–Sun, 8am – 10pm<br />
+                Restaurant: 7am – 11pm
+              </p>
+            </div>
+          </div>
+        </aside>
+
+        <!-- ── Right: Contact form ── -->
+        <div class="form-card" role="main">
+          <h3>Send Us a Message</h3>
+          <p>Fill in the form below and we'll get back to you as soon as possible.</p>
+
+          <!-- Page-level alert for form submission feedback -->
+          <div
+            class="alert"
+            id="contactAlert"
+            role="alert"
+            aria-live="assertive"
+            aria-atomic="true"
+          >
+            <span class="alert-icon" aria-hidden="true"></span>
+            <span class="alert-message"></span>
+          </div>
+
+          <!-- ── Contact Form ── -->
+          <form id="contactForm" novalidate aria-label="Contact message form">
+
+            <!-- Row 1: Name + Email -->
+            <div class="form-row">
+              <div class="form-group">
+                <label for="contactName">
+                  Your Name <span class="required" aria-label="required">*</span>
+                </label>
+                <input
+                  type="text"
+                  id="contactName"
+                  class="form-control"
+                  placeholder="Jane Smith"
+                  autocomplete="name"
+                  aria-describedby="contactNameError"
+                  aria-required="true"
+                />
+                <span class="field-error" id="contactNameError" role="alert"></span>
+              </div>
+
+              <div class="form-group">
+                <label for="contactEmail">
+                  Email Address <span class="required" aria-label="required">*</span>
+                </label>
+                <input
+                  type="email"
+                  id="contactEmail"
+                  class="form-control"
+                  placeholder="jane@example.com"
+                  autocomplete="email"
+                  aria-describedby="contactEmailError"
+                  aria-required="true"
+                />
+                <span class="field-error" id="contactEmailError" role="alert"></span>
+              </div>
+            </div>
+
+            <!-- Subject -->
+            <div class="form-group">
+              <label for="contactSubject">
+                Subject <span class="required" aria-label="required">*</span>
+              </label>
+              <input
+                type="text"
+                id="contactSubject"
+                class="form-control"
+                placeholder="Reservation inquiry, Special request…"
+                aria-describedby="contactSubjectError"
+                aria-required="true"
+              />
+              <span class="field-error" id="contactSubjectError" role="alert"></span>
+            </div>
+
+            <!-- Message -->
+            <div class="form-group">
+              <label for="contactMessage">
+                Message <span class="required" aria-label="required">*</span>
+              </label>
+              <textarea
+                id="contactMessage"
+                class="form-control"
+                rows="5"
+                placeholder="Write your message here…"
+                aria-describedby="contactMessageError"
+                aria-required="true"
+              ></textarea>
+              <span class="field-error" id="contactMessageError" role="alert"></span>
+            </div>
+
+            <!-- Submit button with loading indicator -->
+            <button
+              type="submit"
+              id="contactSubmitBtn"
+              class="btn btn-primary"
+              style="width:100%; justify-content:center; display:flex; align-items:center;"
+              aria-label="Send message"
+            >
+              <span class="btn-text">Send Message</span>
+              <span class="spinner" id="contactSpinner" aria-hidden="true"></span>
+            </button>
+
+          </form>
+        </div><!-- /.form-card -->
+
+      </div><!-- /.contact-grid -->
+
+      <!-- ══════════════════════════════════════════════════════════
+           EMBEDDED MAP PLACEHOLDER
+           ══════════════════════════════════════════════════════════ -->
+      <div class="map-placeholder" aria-label="Hotel location map">
+        <!--
+          Replace the div below with a real <iframe> embed from Google Maps:
+          1. Go to https://maps.google.com
+          2. Search for your hotel address
+          3. Click Share > Embed a map > Copy HTML
+          4. Replace this entire <div class="map-overlay-text"> block with the <iframe>
+        -->
+        <div class="map-overlay-text">
+          <div class="map-pin" aria-hidden="true">📍</div>
+          <h4>123 Grand Boulevard, City Centre</h4>
+          <p>Metropolis 10001</p>
+          <p style="margin-top:0.5rem; font-size:0.85rem; color:var(--text-light);">
+            Replace this placeholder with your Google Maps embed
+          </p>
+        </div>
+      </div>
+
+    </div><!-- /.container -->
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════════════
+       FOOTER
+       ══════════════════════════════════════════════════════════════ -->
+  <footer class="footer" role="contentinfo">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a href="index.html" class="navbar-brand" style="font-size:1.5rem;">RET<span>RET</span></a>
+          <p>A world-class luxury hotel experience in the heart of the city.</p>
+          <div class="footer-social" aria-label="Social media links">
+            <span class="social-icon" aria-label="Facebook" role="img">f</span>
+            <span class="social-icon" aria-label="Instagram" role="img">in</span>
+            <span class="social-icon" aria-label="Twitter" role="img">tw</span>
+          </div>
+        </div>
+        <div>
+          <h4 class="footer-heading">Quick Links</h4>
+          <ul class="footer-links" role="list">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="rooms.html">Rooms &amp; Suites</a></li>
+            <li><a href="booking.html">Make a Booking</a></li>
+            <li><a href="contact.html">Contact Us</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="footer-heading">Our Rooms</h4>
+          <ul class="footer-links" role="list">
+            <li><a href="rooms.html">Deluxe King Room</a></li>
+            <li><a href="rooms.html">Superior Twin Room</a></li>
+            <li><a href="rooms.html">Junior Suite</a></li>
+            <li><a href="rooms.html">Presidential Suite</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="footer-heading">Contact</h4>
+          <div class="footer-contact-item">📍 123 Grand Boulevard, City Centre</div>
+          <div class="footer-contact-item">📞 +1 (555) 123-4567</div>
+          <div class="footer-contact-item">✉️ reservations@retret.com</div>
+          <div class="footer-contact-item">🕐 24/7 Front Desk</div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2025 RETRET Hotel. All rights reserved.</p>
+        <p><a href="#">Privacy Policy</a> &nbsp;|&nbsp; <a href="#">Terms of Service</a></p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ── Scroll-to-top ── -->
+  <button class="scroll-top" id="scrollTopBtn" aria-label="Scroll to top" title="Back to top">▲</button>
+
+  <!-- ══════════════════════════════════════════════════════════════
+       SCRIPTS
+       ══════════════════════════════════════════════════════════════ -->
+  <script src="js/firebase-config.js"></script>
+
+  <script>
+    /* ── Mobile nav toggle ── */
+    const navToggle = document.getElementById('navToggle');
+    const navLinks  = document.getElementById('navLinks');
+    navToggle.addEventListener('click', () => {
+      const isOpen = navLinks.classList.toggle('open');
+      navToggle.classList.toggle('open', isOpen);
+      navToggle.setAttribute('aria-expanded', isOpen);
+    });
+
+    /* ── Scroll-to-top ── */
+    const scrollTopBtn = document.getElementById('scrollTopBtn');
+    window.addEventListener('scroll', () => {
+      scrollTopBtn.classList.toggle('visible', window.scrollY > 400);
+    }, { passive: true });
+    scrollTopBtn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+
+    /* ── Contact Form Handler ── */
+    document.addEventListener('DOMContentLoaded', () => {
+      const form      = document.getElementById('contactForm');
+      const alertEl   = document.getElementById('contactAlert');
+      const submitBtn = document.getElementById('contactSubmitBtn');
+      const spinner   = document.getElementById('contactSpinner');
+
+      if (!form) return;
+
+      // Helper: show/clear validation error
+      function showErr(fieldEl, errEl, msg) {
+        fieldEl.classList.add('error');
+        errEl.textContent = msg;
+        errEl.classList.add('visible');
+      }
+      function clearErr(fieldEl, errEl) {
+        fieldEl.classList.remove('error');
+        errEl.classList.remove('visible');
+      }
+
+      // Live error clearing
+      const fields = [
+        { el: document.getElementById('contactName'),    errEl: document.getElementById('contactNameError') },
+        { el: document.getElementById('contactEmail'),   errEl: document.getElementById('contactEmailError') },
+        { el: document.getElementById('contactSubject'), errEl: document.getElementById('contactSubjectError') },
+        { el: document.getElementById('contactMessage'), errEl: document.getElementById('contactMessageError') }
+      ];
+      fields.forEach(({ el, errEl }) => {
+        el.addEventListener('input', () => clearErr(el, errEl));
+      });
+
+      // Show alert helper
+      function showContactAlert(type, msg) {
+        alertEl.classList.remove('alert-success', 'alert-error', 'visible');
+        alertEl.classList.add(`alert-${type}`, 'visible');
+        alertEl.querySelector('.alert-message').textContent = msg;
+        alertEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        if (type === 'success') setTimeout(() => alertEl.classList.remove('visible'), 8000);
+      }
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        alertEl.classList.remove('visible');
+
+        // Gather values
+        const name    = document.getElementById('contactName').value.trim();
+        const email   = document.getElementById('contactEmail').value.trim();
+        const subject = document.getElementById('contactSubject').value.trim();
+        const message = document.getElementById('contactMessage').value.trim();
+
+        // Validate
+        let valid = true;
+        if (!name)    { showErr(fields[0].el, fields[0].errEl, 'Name is required.');    valid = false; }
+        if (!email)   { showErr(fields[1].el, fields[1].errEl, 'Email is required.');   valid = false; }
+        else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+          showErr(fields[1].el, fields[1].errEl, 'Please enter a valid email address.'); valid = false;
+        }
+        if (!subject) { showErr(fields[2].el, fields[2].errEl, 'Subject is required.'); valid = false; }
+        if (!message) { showErr(fields[3].el, fields[3].errEl, 'Message is required.'); valid = false; }
+        if (!valid) return;
+
+        // Show loading state
+        submitBtn.disabled = true;
+        submitBtn.querySelector('.btn-text').textContent = 'Sending…';
+        spinner.classList.add('visible');
+
+        try {
+          // Save message to Firestore "messages" collection (or simulate if not configured)
+          if (typeof isFirebaseConfigured === 'function' && isFirebaseConfigured()) {
+            await db.collection('messages').add({
+              name,
+              email: email.toLowerCase(),
+              subject,
+              message,
+              timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            });
+          } else {
+            // Demo mode: simulate network delay
+            await new Promise(resolve => setTimeout(resolve, 1000));
+          }
+
+          showContactAlert('success',
+            `✅ Thank you, ${name}! Your message has been sent. We'll reply to ${email} within 2 hours.`
+          );
+          form.reset();
+
+        } catch (err) {
+          console.error('Contact form error:', err);
+          showContactAlert('error',
+            'Sorry, we could not send your message. Please email us directly at info@retret.com.'
+          );
+        } finally {
+          submitBtn.disabled = false;
+          submitBtn.querySelector('.btn-text').textContent = 'Send Message';
+          spinner.classList.remove('visible');
+        }
+      });
+    });
+  </script>
+
+</body>
+</html>
