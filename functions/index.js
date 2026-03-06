@@ -4,7 +4,7 @@
  * Firebase Cloud Functions for the RETRET Hotel website.
  *
  * This module defines server-side logic that runs in Google Cloud
- * in response to Firestore events.
+ * in response to Firestore events and HTTPS calls.
  *
  * DEPLOY:
  *   cd functions && npm install
@@ -19,16 +19,19 @@ const admin     = require('firebase-admin');
 // Initialize the Admin SDK (uses application default credentials in Cloud)
 admin.initializeApp();
 
+// ── Service modules ──
+const { createBooking, checkAvailability } = require('./bookingService');
+const { sendBookingConfirmation, logBooking } = require('./notificationService');
+
 /**
  * onNewBooking
  * ──────────────────────────────────────────────────────────────────
  * Triggered whenever a new document is created in the "bookings"
  * Firestore collection.
  *
- * What it does:
- *   1. Extracts the booking details from the new document snapshot
- *   2. Logs a structured summary to Cloud Logging (visible in Firebase console)
- *   3. Can be extended to send confirmation emails, SMS, etc.
+ * Delegates to:
+ *   notificationService.logBooking()             – structured log entry
+ *   notificationService.sendBookingConfirmation() – confirmation (placeholder)
  *
  * Firestore path: bookings/{bookingId}
  * ──────────────────────────────────────────────────────────────────
@@ -36,46 +39,19 @@ admin.initializeApp();
 exports.onNewBooking = functions.firestore
   .document('bookings/{bookingId}')
   .onCreate((snapshot, context) => {
-    // snapshot.data() returns the newly created document's field values
     const booking   = snapshot.data();
     const bookingId = context.params.bookingId;
 
-    // ── Log the booking details ──
-    // These logs appear in Firebase console > Functions > Logs
-    functions.logger.info('🏨 New booking received', {
-      bookingId,
-      guestName:  booking.name     || 'N/A',
-      guestEmail: booking.email    || 'N/A',
-      room:       booking.room     || 'N/A',
-      checkIn:    booking.checkin  || 'N/A',
-      checkOut:   booking.checkout || 'N/A',
-      guests:     booking.guests   || 0,
-      // Do NOT log phone – minimise PII in logs
-    });
+    try {
+      // Log the booking details to Cloud Logging
+      logBooking(bookingId, booking);
 
-    // ── Optional: Send confirmation email ──
-    // Uncomment and configure a mail provider (e.g., SendGrid, Nodemailer)
-    // when ready to send automated emails.
-    //
-    // const mailOptions = {
-    //   from:    '"RETRET Hotel" <noreply@retret.com>',
-    //   to:      booking.email,
-    //   subject: `Booking Confirmation – ${booking.room}`,
-    //   html: `
-    //     <h2>Thank you for booking with RETRET Hotel!</h2>
-    //     <p>Dear ${booking.name},</p>
-    //     <p>Your reservation for <strong>${booking.room}</strong> is confirmed.</p>
-    //     <ul>
-    //       <li>Check-in: ${booking.checkin}</li>
-    //       <li>Check-out: ${booking.checkout}</li>
-    //       <li>Guests: ${booking.guests}</li>
-    //     </ul>
-    //     <p>We look forward to welcoming you!</p>
-    //   `
-    // };
-    // return transporter.sendMail(mailOptions);
+      // Send (or mock) a confirmation notification to the guest
+      sendBookingConfirmation(booking);
+    } catch (err) {
+      functions.logger.error('onNewBooking: handler error', { bookingId, error: err.message });
+    }
 
-    // Return null to indicate the function completed successfully
     return null;
   });
 
@@ -96,10 +72,45 @@ exports.onNewMessage = functions.firestore
 
     functions.logger.info('📧 New contact message received', {
       messageId,
-      senderName:    message.name    || 'N/A',
-      subject:       message.subject || 'N/A',
-      // Do not log full message body – could contain sensitive content
+      senderName: message.name    || 'N/A',
+      subject:    message.subject || 'N/A',
+      // Full message body is not logged to avoid capturing sensitive content
     });
 
     return null;
   });
+
+/**
+ * checkRoomAvailability
+ * ──────────────────────────────────────────────────────────────────
+ * HTTPS Callable function that checks whether a room is available for
+ * a given date range. Called directly from the frontend using the
+ * Firebase callable SDK.
+ *
+ * Request payload:
+ *   { roomId: string, checkin: string (YYYY-MM-DD), checkout: string (YYYY-MM-DD) }
+ *
+ * Response:
+ *   { available: boolean, conflicts: number }
+ * ──────────────────────────────────────────────────────────────────
+ */
+exports.checkRoomAvailability = functions.https.onCall(async (data, context) => {
+  const { roomId, checkin, checkout } = data || {};
+
+  // Validate required parameters
+  if (!roomId || !checkin || !checkout) {
+    throw new functions.https.HttpsError(
+      'invalid-argument',
+      'Request must include roomId, checkin, and checkout fields.'
+    );
+  }
+
+  try {
+    const result = await checkAvailability(roomId, checkin, checkout);
+    return result;
+  } catch (err) {
+    functions.logger.error('checkRoomAvailability error', { roomId, checkin, checkout, error: err.message });
+    throw new functions.https.HttpsError('internal', err.message);
+  }
+});
+

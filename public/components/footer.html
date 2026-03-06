@@ -1,0 +1,77 @@
+<!--
+  footer.html
+  ──────────────────────────────────────────────────────────────────
+  Reusable footer component for RETRET Hotel.
+  Injected into every page via ui.js → loadComponent('#footer-placeholder', …).
+
+  Includes the scroll-to-top button because it is positioned fixed and
+  requires the same initScrollToTop() setup in ui.js regardless of its
+  DOM placement.
+  ──────────────────────────────────────────────────────────────────
+-->
+<footer class="footer" role="contentinfo">
+  <div class="container">
+    <div class="footer-grid">
+
+      <!-- Brand column -->
+      <div class="footer-brand">
+        <a href="index.html" class="navbar-brand" style="font-size:1.5rem;">RET<span>RET</span></a>
+        <p>A world-class luxury hotel experience in the heart of the city, where elegance meets modern comfort.</p>
+        <div class="footer-social" aria-label="Social media links">
+          <span class="social-icon" aria-label="Facebook" role="img">f</span>
+          <span class="social-icon" aria-label="Instagram" role="img">in</span>
+          <span class="social-icon" aria-label="Twitter" role="img">tw</span>
+        </div>
+      </div>
+
+      <!-- Quick links column -->
+      <div>
+        <h4 class="footer-heading">Quick Links</h4>
+        <ul class="footer-links" role="list">
+          <li><a href="index.html">Home</a></li>
+          <li><a href="rooms.html">Rooms &amp; Suites</a></li>
+          <li><a href="booking.html">Make a Booking</a></li>
+          <li><a href="contact.html">Contact Us</a></li>
+        </ul>
+      </div>
+
+      <!-- Our Rooms column -->
+      <div>
+        <h4 class="footer-heading">Our Rooms</h4>
+        <ul class="footer-links" role="list">
+          <li><a href="rooms.html">Deluxe King Room</a></li>
+          <li><a href="rooms.html">Superior Twin Room</a></li>
+          <li><a href="rooms.html">Junior Suite</a></li>
+          <li><a href="rooms.html">Presidential Suite</a></li>
+        </ul>
+      </div>
+
+      <!-- Contact info column -->
+      <div>
+        <h4 class="footer-heading">Contact</h4>
+        <div class="footer-contact-item">📍 123 Grand Boulevard, City Centre</div>
+        <div class="footer-contact-item">📞 +1 (555) 123-4567</div>
+        <div class="footer-contact-item">✉️ reservations@retret.com</div>
+        <div class="footer-contact-item">🕐 24/7 Front Desk</div>
+      </div>
+
+    </div>
+
+    <!-- Copyright bar -->
+    <div class="footer-bottom">
+      <p>&copy; 2025 RETRET Hotel. All rights reserved.</p>
+      <p>
+        <a href="#">Privacy Policy</a> &nbsp;|&nbsp;
+        <a href="#">Terms of Service</a>
+      </p>
+    </div>
+  </div>
+</footer>
+
+<!-- Scroll-to-top button — positioned fixed; initialised by ui.js -->
+<button
+  class="scroll-top"
+  id="scrollTopBtn"
+  aria-label="Scroll to top"
+  title="Back to top"
+>▲</button>

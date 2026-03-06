@@ -1,0 +1,42 @@
+<!--
+  navbar.html
+  ──────────────────────────────────────────────────────────────────
+  Reusable navbar component for RETRET Hotel.
+  Injected into every page via ui.js → loadComponent('#navbar-placeholder', …).
+
+  Active link highlighting is handled by ui.js after injection:
+  it reads <body data-page="…"> and sets .active + aria-current="page"
+  on the matching <a data-page="…"> link.
+  ──────────────────────────────────────────────────────────────────
+-->
+<nav class="navbar" id="navbar" role="navigation" aria-label="Main navigation">
+  <div class="container">
+
+    <!-- Brand / Logo -->
+    <a href="index.html" class="navbar-brand" aria-label="RETRET Hotel Home">
+      RET<span>RET</span>
+    </a>
+
+    <!-- Navigation links — data-page is used by ui.js to set .active -->
+    <ul class="nav-links" id="navLinks" role="list">
+      <li><a href="index.html"   data-page="home">Home</a></li>
+      <li><a href="rooms.html"   data-page="rooms">Rooms</a></li>
+      <li><a href="booking.html" data-page="booking">Booking</a></li>
+      <li><a href="contact.html" data-page="contact">Contact</a></li>
+    </ul>
+
+    <!-- Mobile hamburger toggle -->
+    <button
+      class="nav-toggle"
+      id="navToggle"
+      aria-label="Toggle navigation menu"
+      aria-expanded="false"
+      aria-controls="navLinks"
+    >
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+
+  </div>
+</nav>
