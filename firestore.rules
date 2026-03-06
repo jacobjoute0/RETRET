@@ -34,7 +34,10 @@ service cloud.firestore {
     // Update/delete is also prohibited publicly.
     match /bookings/{bookingId} {
       allow create: if
-        // Ensure required fields are present and correctly typed
+        // Ensure all required fields are present (no missing required data)
+        request.resource.data.keys().hasAll(['name', 'email', 'phone', 'room', 'checkin', 'checkout', 'guests']) &&
+
+        // Type checks
         request.resource.data.name     is string &&
         request.resource.data.email    is string &&
         request.resource.data.phone    is string &&
@@ -42,6 +45,16 @@ service cloud.firestore {
         request.resource.data.checkin  is string &&
         request.resource.data.checkout is string &&
         request.resource.data.guests   is int    &&
+
+        // Size limits to prevent oversized payloads
+        request.resource.data.name.size()     < 100 &&
+        request.resource.data.email.size()    < 200 &&
+        request.resource.data.phone.size()    < 50  &&
+        request.resource.data.room.size()     < 200 &&
+        request.resource.data.checkin.size()  == 10 &&   // YYYY-MM-DD exactly
+        request.resource.data.checkout.size() == 10 &&   // YYYY-MM-DD exactly
+
+        // Business logic constraints
         request.resource.data.guests   > 0       &&
         request.resource.data.guests   <= 10;
 
@@ -53,10 +66,20 @@ service cloud.firestore {
     // Reading messages is restricted to admins only (via Admin SDK).
     match /messages/{messageId} {
       allow create: if
+        // Ensure all required fields are present
+        request.resource.data.keys().hasAll(['name', 'email', 'subject', 'message']) &&
+
+        // Type checks
         request.resource.data.name    is string &&
         request.resource.data.email   is string &&
         request.resource.data.subject is string &&
-        request.resource.data.message is string;
+        request.resource.data.message is string &&
+
+        // Size limits
+        request.resource.data.name.size()    < 100  &&
+        request.resource.data.email.size()   < 200  &&
+        request.resource.data.subject.size() < 300  &&
+        request.resource.data.message.size() < 5000;
 
       allow read, update, delete: if false;  // Admin-only via backend
     }
