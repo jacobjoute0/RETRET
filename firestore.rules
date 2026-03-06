@@ -1,0 +1,70 @@
+// firestore.rules
+// ──────────────────────────────────────────────────────────────────
+// Firestore Security Rules for the RETRET Hotel website.
+//
+// OVERVIEW:
+//   - Anyone (including unauthenticated visitors) can read the "rooms"
+//     collection so the website can display available rooms.
+//   - Anyone can CREATE a booking document (public write).
+//     Reading existing bookings is restricted to prevent guests
+//     from viewing other guests' reservation details.
+//   - Anyone can CREATE a contact message.
+//   - All other operations are denied by default.
+//
+// DEPLOY:
+//   firebase deploy --only firestore:rules
+// ──────────────────────────────────────────────────────────────────
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── rooms collection ──────────────────────────────────────────
+    // Public read access so room listings are visible to all visitors.
+    // Write access is locked down (only via Admin SDK / console).
+    match /rooms/{roomId} {
+      allow read: if true;         // Anyone can read room documents
+      allow write: if false;       // No public writes – managed via console
+    }
+
+    // ── bookings collection ───────────────────────────────────────
+    // Anyone can submit a new booking (create).
+    // Reading individual bookings is prohibited for privacy.
+    // Update/delete is also prohibited publicly.
+    match /bookings/{bookingId} {
+      allow create: if
+        // Ensure required fields are present and correctly typed
+        request.resource.data.name     is string &&
+        request.resource.data.email    is string &&
+        request.resource.data.phone    is string &&
+        request.resource.data.room     is string &&
+        request.resource.data.checkin  is string &&
+        request.resource.data.checkout is string &&
+        request.resource.data.guests   is int    &&
+        request.resource.data.guests   > 0       &&
+        request.resource.data.guests   <= 10;
+
+      allow read, update, delete: if false;  // Deny public read/update/delete
+    }
+
+    // ── messages collection ───────────────────────────────────────
+    // Anyone can submit a contact message (create).
+    // Reading messages is restricted to admins only (via Admin SDK).
+    match /messages/{messageId} {
+      allow create: if
+        request.resource.data.name    is string &&
+        request.resource.data.email   is string &&
+        request.resource.data.subject is string &&
+        request.resource.data.message is string;
+
+      allow read, update, delete: if false;  // Admin-only via backend
+    }
+
+    // ── Catch-all: deny everything else ──────────────────────────
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+  }
+}

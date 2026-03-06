@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- ── Meta ── -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="RETRET Hotel – A luxury experience in the heart of the city. Book your stay today." />
+  <title>RETRET Hotel – Luxury Stays</title>
+
+  <!-- ── Favicon placeholder ── -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏨</text></svg>" />
+
+  <!-- ── Google Fonts ── -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet" />
+
+  <!-- ── Main CSS ── -->
+  <link rel="stylesheet" href="css/style.css" />
+
+  <!-- ── Firebase CDN (compat v9) ── -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+
+  <!-- ══════════════════════════════════════════════════════════════
+       NAVIGATION
+       ══════════════════════════════════════════════════════════════ -->
+  <nav class="navbar" id="navbar" role="navigation" aria-label="Main navigation">
+    <div class="container">
+      <!-- Brand / Logo -->
+      <a href="index.html" class="navbar-brand" aria-label="RETRET Hotel Home">
+        RET<span>RET</span>
+      </a>
+
+      <!-- Navigation links -->
+      <ul class="nav-links" id="navLinks" role="list">
+        <li><a href="index.html"   class="active" aria-current="page">Home</a></li>
+        <li><a href="rooms.html">Rooms</a></li>
+        <li><a href="booking.html">Booking</a></li>
+        <li><a href="contact.html">Contact</a></li>
+      </ul>
+
+      <!-- Mobile hamburger toggle button -->
+      <button
+        class="nav-toggle"
+        id="navToggle"
+        aria-label="Toggle navigation menu"
+        aria-expanded="false"
+        aria-controls="navLinks"
+      >
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ══════════════════════════════════════════════════════════════
+       HERO SECTION
+       ══════════════════════════════════════════════════════════════ -->
+  <section class="hero" id="home" aria-label="Hotel hero banner">
+    <div class="container">
+      <div class="hero-content">
+        <!-- Pre-heading badge -->
+        <span class="hero-badge">✦ Luxury Hotel & Spa</span>
+
+        <!-- Main headline -->
+        <h1>Experience <span>Luxury</span><br />Like Never Before</h1>
+
+        <!-- Subheading / tagline -->
+        <p>
+          Nestled in the heart of the city, RETRET Hotel offers an unparalleled
+          blend of elegance, comfort, and world-class service.
+        </p>
+
+        <!-- CTA buttons -->
+        <div class="hero-buttons">
+          <a href="booking.html" class="btn btn-primary">Book Your Stay</a>
+          <a href="rooms.html"   class="btn btn-outline">Explore Rooms</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Search Bar (floating at the bottom of the hero) -->
+    <div class="hero-search" role="search" aria-label="Quick room search">
+      <div class="field">
+        <label for="searchCheckin">Check-in</label>
+        <input type="date" id="searchCheckin" aria-label="Check-in date" />
+      </div>
+      <div class="field">
+        <label for="searchCheckout">Check-out</label>
+        <input type="date" id="searchCheckout" aria-label="Check-out date" />
+      </div>
+      <div class="field">
+        <label for="searchGuests">Guests</label>
+        <select id="searchGuests" aria-label="Number of guests">
+          <option value="1">1 Guest</option>
+          <option value="2" selected>2 Guests</option>
+          <option value="3">3 Guests</option>
+          <option value="4">4+ Guests</option>
+        </select>
+      </div>
+      <!-- Clicking Search redirects to booking page with pre-filled params -->
+      <button class="btn btn-primary" id="heroSearchBtn" type="button">Search</button>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════════════
+       ABOUT / HOTEL DESCRIPTION SECTION
+       ══════════════════════════════════════════════════════════════ -->
+  <section class="about section-padding" id="about" aria-label="About RETRET Hotel">
+    <div class="container">
+      <div class="about-grid">
+
+        <!-- Left: decorative image with stats badge -->
+        <div class="about-image-wrapper">
+          <img
+            class="about-image-main"
+            src="https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=700&auto=format"
+            alt="RETRET Hotel lobby interior"
+            loading="lazy"
+          />
+          <!-- Floating stat badge -->
+          <div class="about-badge-stat" aria-label="25 years of excellence">
+            <span class="number">25+</span>
+            <span class="label">Years of Excellence</span>
+          </div>
+        </div>
+
+        <!-- Right: text content -->
+        <div class="about-content">
+          <p class="section-subtitle">Our Story</p>
+          <h2 class="section-title">A Sanctuary of<br />Timeless Elegance</h2>
+
+          <p>
+            Founded in 1999, RETRET Hotel has been redefining luxury hospitality for over
+            two decades. Our philosophy is simple: every guest deserves an experience that
+            transcends the ordinary.
+          </p>
+          <p>
+            From our meticulously designed rooms to our award-winning spa and gourmet
+            restaurants, every detail has been curated with your comfort and delight in mind.
+          </p>
+
+          <!-- Key statistics row -->
+          <div class="about-stats" role="list" aria-label="Hotel statistics">
+            <div class="stat-item" role="listitem">
+              <span class="number">120+</span>
+              <span class="label">Luxury Rooms</span>
+            </div>
+            <div class="stat-item" role="listitem">
+              <span class="number">4.9★</span>
+              <span class="label">Guest Rating</span>
+            </div>
+            <div class="stat-item" role="listitem">
+              <span class="number">50K+</span>
+              <span class="label">Happy Guests</span>
+            </div>
+          </div>
+
+          <a href="rooms.html" class="btn btn-primary" style="margin-top:2rem;">View Our Rooms</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════════════
+       FEATURED ROOMS SECTION
+       ══════════════════════════════════════════════════════════════ -->
+  <section class="featured-rooms section-padding" id="rooms" aria-label="Featured rooms">
+    <div class="container">
+      <p class="section-subtitle">Our Accommodations</p>
+      <h2 class="section-title">Featured Rooms &amp; Suites</h2>
+      <p class="section-description">
+        Choose from our selection of thoughtfully designed rooms and suites,
+        each offering a unique blend of comfort and sophistication.
+      </p>
+
+      <!-- Room cards are dynamically injected here by rooms.js -->
+      <div id="featuredRoomsContainer" aria-live="polite" aria-label="Featured rooms list">
+        <!-- Skeleton loaders displayed until rooms.js finishes -->
+        <p style="text-align:center;color:var(--text-light);">Loading rooms…</p>
+      </div>
+
+      <!-- Link to full rooms page -->
+      <div style="text-align:center; margin-top:3rem;">
+        <a href="rooms.html" class="btn btn-outline">View All Rooms</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════════════
+       FACILITIES SECTION
+       ══════════════════════════════════════════════════════════════ -->
+  <section class="facilities section-padding" id="facilities" aria-label="Hotel facilities">
+    <div class="container">
+      <p class="section-subtitle">What We Offer</p>
+      <h2 class="section-title">World-Class Facilities</h2>
+      <p class="section-description">
+        Every amenity you need for the perfect stay – from leisure to business.
+      </p>
+
+      <!-- Facilities grid -->
+      <div class="facilities-grid" role="list" aria-label="Facilities list">
+
+        <div class="facility-card" role="listitem">
+          <div class="facility-icon" aria-hidden="true">📶</div>
+          <h4>Free WiFi</h4>
+          <p>High-speed internet throughout the hotel</p>
+        </div>
+
+        <div class="facility-card" role="listitem">
+          <div class="facility-icon" aria-hidden="true">🏊</div>
+          <h4>Infinity Pool</h4>
+          <p>Outdoor heated pool with city views</p>
+        </div>
+
+        <div class="facility-card" role="listitem">
+          <div class="facility-icon" aria-hidden="true">💆</div>
+          <h4>Luxury Spa</h4>
+          <p>Full-service spa and wellness centre</p>
+        </div>
+
+        <div class="facility-card" role="listitem">
+          <div class="facility-icon" aria-hidden="true">🍽️</div>
+          <h4>Fine Dining</h4>
+          <p>Award-winning restaurant & rooftop bar</p>
+        </div>
+
+        <div class="facility-card" role="listitem">
+          <div class="facility-icon" aria-hidden="true">🏋️</div>
+          <h4>Fitness Centre</h4>
+          <p>State-of-the-art gym, open 24 hours</p>
+        </div>
+
+        <div class="facility-card" role="listitem">
+          <div class="facility-icon" aria-hidden="true">🅿️</div>
+          <h4>Valet Parking</h4>
+          <p>Secure underground parking available</p>
+        </div>
+
+        <div class="facility-card" role="listitem">
+          <div class="facility-icon" aria-hidden="true">🎭</div>
+          <h4>Events &amp; Meetings</h4>
+          <p>Conference rooms &amp; banquet facilities</p>
+        </div>
+
+        <div class="facility-card" role="listitem">
+          <div class="facility-icon" aria-hidden="true">🛎️</div>
+          <h4>Concierge</h4>
+          <p>24/7 personalised concierge service</p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════════════
+       CALL TO ACTION BANNER
+       ══════════════════════════════════════════════════════════════ -->
+  <section class="cta" aria-label="Book your stay call to action">
+    <div class="container">
+      <h2>Ready for an Unforgettable Stay?</h2>
+      <p>
+        Secure your reservation today and experience the RETRET difference.
+        Best rate guaranteed when you book directly.
+      </p>
+      <a href="booking.html" class="btn btn-primary">Book Now &rarr;</a>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════════════
+       FOOTER
+       ══════════════════════════════════════════════════════════════ -->
+  <footer class="footer" role="contentinfo">
+    <div class="container">
+      <div class="footer-grid">
+
+        <!-- Brand column -->
+        <div class="footer-brand">
+          <a href="index.html" class="navbar-brand" style="font-size:1.5rem;">RET<span>RET</span></a>
+          <p>A world-class luxury hotel experience in the heart of the city, where elegance meets modern comfort.</p>
+          <div class="footer-social" aria-label="Social media links">
+            <span class="social-icon" aria-label="Facebook" role="img">f</span>
+            <span class="social-icon" aria-label="Instagram" role="img">in</span>
+            <span class="social-icon" aria-label="Twitter" role="img">tw</span>
+          </div>
+        </div>
+
+        <!-- Quick links -->
+        <div>
+          <h4 class="footer-heading">Quick Links</h4>
+          <ul class="footer-links" role="list">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="rooms.html">Rooms &amp; Suites</a></li>
+            <li><a href="booking.html">Make a Booking</a></li>
+            <li><a href="contact.html">Contact Us</a></li>
+          </ul>
+        </div>
+
+        <!-- Rooms links -->
+        <div>
+          <h4 class="footer-heading">Our Rooms</h4>
+          <ul class="footer-links" role="list">
+            <li><a href="rooms.html">Deluxe King Room</a></li>
+            <li><a href="rooms.html">Superior Twin Room</a></li>
+            <li><a href="rooms.html">Junior Suite</a></li>
+            <li><a href="rooms.html">Presidential Suite</a></li>
+          </ul>
+        </div>
+
+        <!-- Contact info -->
+        <div>
+          <h4 class="footer-heading">Contact</h4>
+          <div class="footer-contact-item">📍 123 Grand Boulevard, City Centre</div>
+          <div class="footer-contact-item">📞 +1 (555) 123-4567</div>
+          <div class="footer-contact-item">✉️ reservations@retret.com</div>
+          <div class="footer-contact-item">🕐 24/7 Front Desk</div>
+        </div>
+
+      </div>
+
+      <!-- Copyright bar -->
+      <div class="footer-bottom">
+        <p>&copy; 2025 RETRET Hotel. All rights reserved.</p>
+        <p>
+          <a href="#">Privacy Policy</a> &nbsp;|&nbsp;
+          <a href="#">Terms of Service</a>
+        </p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ── Scroll-to-top button ── -->
+  <button
+    class="scroll-top"
+    id="scrollTopBtn"
+    aria-label="Scroll to top"
+    title="Back to top"
+  >▲</button>
+
+  <!-- ══════════════════════════════════════════════════════════════
+       SCRIPTS
+       ══════════════════════════════════════════════════════════════ -->
+  <!-- Firebase configuration (must load before rooms.js) -->
+  <script src="js/firebase-config.js"></script>
+  <!-- Room loader -->
+  <script src="js/rooms.js"></script>
+
+  <script>
+    /* ── Navbar: add 'scrolled' class when page scrolls ── */
+    const navbar = document.getElementById('navbar');
+    window.addEventListener('scroll', () => {
+      navbar.classList.toggle('scrolled', window.scrollY > 50);
+    }, { passive: true });
+
+    /* ── Mobile nav toggle ── */
+    const navToggle = document.getElementById('navToggle');
+    const navLinks  = document.getElementById('navLinks');
+    navToggle.addEventListener('click', () => {
+      const isOpen = navLinks.classList.toggle('open');
+      navToggle.classList.toggle('open', isOpen);
+      navToggle.setAttribute('aria-expanded', isOpen);
+    });
+
+    /* ── Scroll-to-top button visibility ── */
+    const scrollTopBtn = document.getElementById('scrollTopBtn');
+    window.addEventListener('scroll', () => {
+      scrollTopBtn.classList.toggle('visible', window.scrollY > 400);
+    }, { passive: true });
+    scrollTopBtn.addEventListener('click', () => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    /* ── Hero search → booking page redirect ── */
+    document.getElementById('heroSearchBtn').addEventListener('click', () => {
+      const checkin  = document.getElementById('searchCheckin').value;
+      const checkout = document.getElementById('searchCheckout').value;
+      const guests   = document.getElementById('searchGuests').value;
+      let   url      = 'booking.html';
+      const params   = new URLSearchParams();
+      if (checkin)  params.set('checkin',  checkin);
+      if (checkout) params.set('checkout', checkout);
+      if (guests)   params.set('guests',   guests);
+      if (params.toString()) url += '?' + params.toString();
+      window.location.href = url;
+    });
+
+    /* ── Load featured rooms from Firestore (or fallback) ── */
+    document.addEventListener('DOMContentLoaded', () => {
+      loadFeaturedRooms('featuredRoomsContainer');
+    });
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- ── Meta ── -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Book your stay at RETRET Hotel. Fill in our easy online reservation form." />
+  <title>Book a Room – RETRET Hotel</title>
+
+  <!-- ── Favicon ── -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏨</text></svg>" />
+
+  <!-- ── Google Fonts ── -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet" />
+
+  <!-- ── Main CSS ── -->
+  <link rel="stylesheet" href="css/style.css" />
+
+  <!-- ── Firebase CDN ── -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+
+  <!-- ══════════════════════════════════════════════════════════════
+       NAVIGATION
+       ══════════════════════════════════════════════════════════════ -->
+  <nav class="navbar scrolled" id="navbar" role="navigation" aria-label="Main navigation">
+    <div class="container">
+      <a href="index.html" class="navbar-brand" aria-label="RETRET Hotel Home">RET<span>RET</span></a>
+
+      <ul class="nav-links" id="navLinks" role="list">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="rooms.html">Rooms</a></li>
+        <li><a href="booking.html" class="active" aria-current="page">Booking</a></li>
+        <li><a href="contact.html">Contact</a></li>
+      </ul>
+
+      <button
+        class="nav-toggle"
+        id="navToggle"
+        aria-label="Toggle navigation menu"
+        aria-expanded="false"
+        aria-controls="navLinks"
+      >
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ══════════════════════════════════════════════════════════════
+       PAGE HEADER BANNER
+       ══════════════════════════════════════════════════════════════ -->
+  <header class="page-header" role="banner">
+    <div class="container">
+      <h1>Make a Reservation</h1>
+      <p class="breadcrumb">
+        <a href="index.html">Home</a> &rsaquo; Booking
+      </p>
+    </div>
+  </header>
+
+  <!-- ══════════════════════════════════════════════════════════════
+       BOOKING SECTION
+       ══════════════════════════════════════════════════════════════ -->
+  <section class="booking-section" aria-label="Booking form">
+    <div class="container">
+
+      <div class="booking-wrapper">
+
+        <!-- ── Left: Booking information panel ── -->
+        <aside class="booking-info" aria-label="Booking information">
+          <h3>Reservation Details</h3>
+          <p>Complete the form to secure your room. Our team will confirm your booking within 2 hours.</p>
+
+          <div class="booking-info-item">
+            <span class="icon" aria-hidden="true">✅</span>
+            <div class="text">
+              <h5>Best Rate Guarantee</h5>
+              <p>Book direct for the best available rate, no hidden fees.</p>
+            </div>
+          </div>
+
+          <div class="booking-info-item">
+            <span class="icon" aria-hidden="true">🔒</span>
+            <div class="text">
+              <h5>Secure Booking</h5>
+              <p>Your data is encrypted and never shared with third parties.</p>
+            </div>
+          </div>
+
+          <div class="booking-info-item">
+            <span class="icon" aria-hidden="true">🔄</span>
+            <div class="text">
+              <h5>Free Cancellation</h5>
+              <p>Cancel up to 48 hours before check-in, no charge.</p>
+            </div>
+          </div>
+
+          <div class="booking-info-item">
+            <span class="icon" aria-hidden="true">📞</span>
+            <div class="text">
+              <h5>Need Help?</h5>
+              <p>Call us 24/7: <strong style="color:var(--gold);">+1 (555) 123-4567</strong></p>
+            </div>
+          </div>
+        </aside>
+
+        <!-- ── Right: Booking form card ── -->
+        <div class="form-card" role="main">
+          <h3>Your Details</h3>
+          <p>Fields marked <span style="color:#e74c3c">*</span> are required.</p>
+
+          <!-- Page-level success/error alert (hidden until submission) -->
+          <div
+            class="alert"
+            id="bookingAlert"
+            role="alert"
+            aria-live="assertive"
+            aria-atomic="true"
+          >
+            <span class="alert-icon" aria-hidden="true"></span>
+            <span class="alert-message"></span>
+          </div>
+
+          <!-- ── Booking Form ── -->
+          <form id="bookingForm" novalidate aria-label="Hotel booking form">
+
+            <!-- Row 1: Name + Email -->
+            <div class="form-row">
+              <div class="form-group">
+                <label for="guestName">
+                  Full Name <span class="required" aria-label="required">*</span>
+                </label>
+                <input
+                  type="text"
+                  id="guestName"
+                  class="form-control"
+                  placeholder="Jane Smith"
+                  autocomplete="name"
+                  aria-describedby="nameError"
+                  aria-required="true"
+                />
+                <span class="field-error" id="nameError" role="alert"></span>
+              </div>
+
+              <div class="form-group">
+                <label for="guestEmail">
+                  Email Address <span class="required" aria-label="required">*</span>
+                </label>
+                <input
+                  type="email"
+                  id="guestEmail"
+                  class="form-control"
+                  placeholder="jane@example.com"
+                  autocomplete="email"
+                  aria-describedby="emailError"
+                  aria-required="true"
+                />
+                <span class="field-error" id="emailError" role="alert"></span>
+              </div>
+            </div>
+
+            <!-- Row 2: Phone + Room Type -->
+            <div class="form-row">
+              <div class="form-group">
+                <label for="guestPhone">
+                  Phone Number <span class="required" aria-label="required">*</span>
+                </label>
+                <input
+                  type="tel"
+                  id="guestPhone"
+                  class="form-control"
+                  placeholder="+1 (555) 000-0000"
+                  autocomplete="tel"
+                  aria-describedby="phoneError"
+                  aria-required="true"
+                />
+                <span class="field-error" id="phoneError" role="alert"></span>
+              </div>
+
+              <div class="form-group">
+                <label for="roomType">
+                  Room Type <span class="required" aria-label="required">*</span>
+                </label>
+                <!-- Options populated dynamically by rooms.js -->
+                <select
+                  id="roomType"
+                  class="form-control"
+                  aria-describedby="roomError"
+                  aria-required="true"
+                >
+                  <option value="">— Select a room —</option>
+                </select>
+                <span class="field-error" id="roomError" role="alert"></span>
+              </div>
+            </div>
+
+            <!-- Row 3: Check-in + Check-out -->
+            <div class="form-row">
+              <div class="form-group">
+                <label for="checkinDate">
+                  Check-in Date <span class="required" aria-label="required">*</span>
+                </label>
+                <input
+                  type="date"
+                  id="checkinDate"
+                  class="form-control"
+                  aria-describedby="checkinError"
+                  aria-required="true"
+                />
+                <span class="field-error" id="checkinError" role="alert"></span>
+              </div>
+
+              <div class="form-group">
+                <label for="checkoutDate">
+                  Check-out Date <span class="required" aria-label="required">*</span>
+                </label>
+                <input
+                  type="date"
+                  id="checkoutDate"
+                  class="form-control"
+                  aria-describedby="checkoutError"
+                  aria-required="true"
+                />
+                <span class="field-error" id="checkoutError" role="alert"></span>
+              </div>
+            </div>
+
+            <!-- Row 4: Number of guests (full-width) -->
+            <div class="form-group">
+              <label for="numGuests">
+                Number of Guests <span class="required" aria-label="required">*</span>
+              </label>
+              <input
+                type="number"
+                id="numGuests"
+                class="form-control"
+                min="1"
+                max="10"
+                value="1"
+                placeholder="1"
+                aria-describedby="guestsError"
+                aria-required="true"
+              />
+              <span class="field-error" id="guestsError" role="alert"></span>
+            </div>
+
+            <!-- Submit button with loading spinner -->
+            <button
+              type="submit"
+              id="submitBtn"
+              class="btn btn-primary"
+              style="width:100%; justify-content:center; display:flex; align-items:center;"
+              aria-label="Submit booking"
+            >
+              <span class="btn-text">Confirm Booking</span>
+              <!-- Spinner shown during async submission -->
+              <span class="spinner" id="submitSpinner" aria-hidden="true"></span>
+            </button>
+
+          </form>
+        </div><!-- /.form-card -->
+
+      </div><!-- /.booking-wrapper -->
+    </div><!-- /.container -->
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════════════
+       FOOTER
+       ══════════════════════════════════════════════════════════════ -->
+  <footer class="footer" role="contentinfo">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a href="index.html" class="navbar-brand" style="font-size:1.5rem;">RET<span>RET</span></a>
+          <p>A world-class luxury hotel experience in the heart of the city.</p>
+          <div class="footer-social" aria-label="Social media links">
+            <span class="social-icon" aria-label="Facebook" role="img">f</span>
+            <span class="social-icon" aria-label="Instagram" role="img">in</span>
+            <span class="social-icon" aria-label="Twitter" role="img">tw</span>
+          </div>
+        </div>
+        <div>
+          <h4 class="footer-heading">Quick Links</h4>
+          <ul class="footer-links" role="list">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="rooms.html">Rooms &amp; Suites</a></li>
+            <li><a href="booking.html">Make a Booking</a></li>
+            <li><a href="contact.html">Contact Us</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="footer-heading">Our Rooms</h4>
+          <ul class="footer-links" role="list">
+            <li><a href="rooms.html">Deluxe King Room</a></li>
+            <li><a href="rooms.html">Superior Twin Room</a></li>
+            <li><a href="rooms.html">Junior Suite</a></li>
+            <li><a href="rooms.html">Presidential Suite</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="footer-heading">Contact</h4>
+          <div class="footer-contact-item">📍 123 Grand Boulevard, City Centre</div>
+          <div class="footer-contact-item">📞 +1 (555) 123-4567</div>
+          <div class="footer-contact-item">✉️ reservations@retret.com</div>
+          <div class="footer-contact-item">🕐 24/7 Front Desk</div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2025 RETRET Hotel. All rights reserved.</p>
+        <p><a href="#">Privacy Policy</a> &nbsp;|&nbsp; <a href="#">Terms of Service</a></p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ── Scroll-to-top ── -->
+  <button class="scroll-top" id="scrollTopBtn" aria-label="Scroll to top" title="Back to top">▲</button>
+
+  <!-- ══════════════════════════════════════════════════════════════
+       SCRIPTS
+       ══════════════════════════════════════════════════════════════ -->
+  <script src="js/firebase-config.js"></script>
+  <script src="js/rooms.js"></script>
+  <script src="js/booking.js"></script>
+
+  <script>
+    /* ── Mobile nav toggle ── */
+    const navToggle = document.getElementById('navToggle');
+    const navLinks  = document.getElementById('navLinks');
+    navToggle.addEventListener('click', () => {
+      const isOpen = navLinks.classList.toggle('open');
+      navToggle.classList.toggle('open', isOpen);
+      navToggle.setAttribute('aria-expanded', isOpen);
+    });
+
+    /* ── Scroll-to-top ── */
+    const scrollTopBtn = document.getElementById('scrollTopBtn');
+    window.addEventListener('scroll', () => {
+      scrollTopBtn.classList.toggle('visible', window.scrollY > 400);
+    }, { passive: true });
+    scrollTopBtn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+
+    /* ── Initialize form + populate room dropdown on DOM ready ── */
+    document.addEventListener('DOMContentLoaded', () => {
+      // Populate the room type <select> from Firestore/sample data
+      populateRoomDropdown('roomType');
+
+      // Pre-fill dates/guests from URL params (if coming from hero search)
+      const params = new URLSearchParams(window.location.search);
+      const checkin  = params.get('checkin');
+      const checkout = params.get('checkout');
+      const guests   = params.get('guests');
+      if (checkin)  document.getElementById('checkinDate').value  = checkin;
+      if (checkout) document.getElementById('checkoutDate').value = checkout;
+      if (guests)   document.getElementById('numGuests').value    = guests;
+
+      // Wire up the booking form validation and submission
+      initBookingForm();
+    });
+  </script>
+
+</body>
+</html>
