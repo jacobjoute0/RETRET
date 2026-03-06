@@ -12,6 +12,9 @@
  *   - Scroll-to-top button: show/hide at scrollY > 400, smooth scroll on click.
  *   - Active nav link: reads <body data-page="…"> and highlights the
  *     matching link after the navbar component is injected.
+ *   - Admin nav link: shows the Admin nav item to authenticated admin users
+ *     by checking Firebase Auth state (requires firebase-auth-compat.js and
+ *     firebase-config.js to be loaded before ui.js).
  *
  * Load order: add <script src="js/ui.js"></script> on every HTML page
  * AFTER any page-specific scripts (e.g., firebase-config.js, rooms.js).
@@ -132,6 +135,42 @@ function setActiveNavLink() {
   });
 }
 
+/* ── Admin Nav Link ──────────────────────────────────────────────── */
+
+/**
+ * initAdminNavLink
+ * Shows the "Admin" nav item in the navbar if the current user is
+ * authenticated with Firebase Auth and has the "admin" role stored in
+ * the Firestore "users" collection.
+ *
+ * Requires firebase-auth-compat.js, firebase-firestore-compat.js, and
+ * firebase-config.js to be loaded before ui.js.  Fails silently if
+ * these SDKs are unavailable (e.g. when Firebase is not configured).
+ */
+function initAdminNavLink() {
+  // Only run if Firebase Auth is available
+  if (typeof firebase === 'undefined' || !firebase.auth) return;
+
+  try {
+    firebase.auth().onAuthStateChanged(async (user) => {
+      if (!user) return; // Not signed in – admin link stays hidden
+
+      try {
+        // Check admin role in Firestore
+        const doc = await db.collection('users').doc(user.uid).get();
+        if (doc.exists && doc.data().role === 'admin') {
+          const adminNavItem = document.getElementById('adminNavItem');
+          if (adminNavItem) adminNavItem.style.display = '';
+        }
+      } catch {
+        // Firestore read failed (e.g. rules deny access) – silently ignore
+      }
+    });
+  } catch {
+    // Firebase Auth not initialised – silently ignore
+  }
+}
+
 /* ── DOMContentLoaded – Bootstrap ───────────────────────────────── */
 
 /**
@@ -139,6 +178,7 @@ function setActiveNavLink() {
  *   1. Load the navbar and footer HTML partials into their placeholders.
  *   2. Highlight the active nav link for the current page.
  *   3. Initialise scroll, mobile-nav, and scroll-to-top handlers.
+ *   4. Show the admin nav link for authenticated admin users.
  */
 document.addEventListener('DOMContentLoaded', async () => {
   // Inject reusable components into their placeholders
@@ -152,4 +192,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   initNavbarScroll();
   initMobileNav();
   initScrollToTop();
+
+  // Show admin link to authenticated admin users
+  initAdminNavLink();
 });
