@@ -1,5 +1,5 @@
 /**
- * functions/notificationService.js
+ * backend/notificationService.js
  * ──────────────────────────────────────────────────────────────────
  * Notification and logging logic for the RETRET Hotel Cloud Functions.
  *
@@ -24,7 +24,7 @@
  *        user: "apikey", pass: "<SENDGRID_API_KEY>"
  *   4. Deploy the functions:  firebase deploy --only functions
  *
- * Used by functions/index.js.
+ * Used by backend/index.js.
  * ──────────────────────────────────────────────────────────────────
  */
 
