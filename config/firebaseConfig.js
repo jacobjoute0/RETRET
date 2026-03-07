@@ -87,12 +87,13 @@
 
 // Reference configuration object (replace placeholders before deploying)
 const firebaseConfig = {
-  apiKey:            "YOUR_API_KEY",
-  authDomain:        "YOUR_PROJECT_ID.firebaseapp.com",
-  projectId:         "YOUR_PROJECT_ID",
-  storageBucket:     "YOUR_PROJECT_ID.appspot.com",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId:             "YOUR_APP_ID"
+  apiKey: "AIzaSyCUL...",
+  authDomain: "retret-2f25f.firebaseapp.com",
+  projectId: "retret-2f25f",
+  storageBucket: "retret-2f25f.firebasestorage.app",
+  messagingSenderId: "855570710368",
+  appId: "1:855570710368:web:2f4040087e5018aee9e805",
+  measurementId: "G-QGEY8YEN7K"
 };
 
-module.exports = { firebaseConfig };
+firebase.initializeApp(firebaseConfig);
