@@ -1,5 +1,7 @@
 {
   "projects": {
-    "default": "retret-hotel"
-  }
+    "default": "retret-2f25f"
+  },
+  "targets": {},
+  "etags": {}
 }
