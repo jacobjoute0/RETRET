@@ -1,5 +1,5 @@
 /**
- * functions/index.js
+ * backend/index.js
  * ──────────────────────────────────────────────────────────────────
  * Firebase Cloud Functions for the RETRET Hotel website.
  *
@@ -7,7 +7,7 @@
  * in response to Firestore events and HTTPS calls.
  *
  * DEPLOY:
- *   cd functions && npm install
+ *   cd backend && npm install
  *   firebase deploy --only functions
  * ──────────────────────────────────────────────────────────────────
  */

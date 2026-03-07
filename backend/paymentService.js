@@ -1,5 +1,5 @@
 /**
- * functions/paymentService.js
+ * backend/paymentService.js
  * ──────────────────────────────────────────────────────────────────
  * Payment processing logic for the RETRET Hotel Cloud Functions.
  *
@@ -9,7 +9,7 @@
  *
  * HOW TO ADD REAL STRIPE PAYMENTS:
  *   1. Install the Stripe SDK:
- *        cd functions && npm install stripe
+ *        cd backend && npm install stripe
  *   2. Set your Stripe secret key as a Firebase Function config value:
  *        firebase functions:config:set stripe.secret_key="sk_live_..."
  *   3. Uncomment the Stripe sections below and remove the placeholder code.
@@ -17,7 +17,7 @@
  *
  * HOW TO ADD PAYPAL:
  *   1. Install PayPal SDK:
- *        cd functions && npm install @paypal/checkout-server-sdk
+ *        cd backend && npm install @paypal/checkout-server-sdk
  *   2. Set PayPal credentials:
  *        firebase functions:config:set paypal.client_id="..." paypal.client_secret="..."
  *   3. Follow the PayPal Orders API integration guide.
@@ -26,7 +26,7 @@
  *   handlePayment(bookingId, amount, paymentMethodId) – process a payment
  *   validatePaymentData(data)                         – validate request payload
  *
- * Used by functions/index.js.
+ * Used by backend/index.js.
  * ──────────────────────────────────────────────────────────────────
  */
 

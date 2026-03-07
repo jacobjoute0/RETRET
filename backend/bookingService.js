@@ -1,5 +1,5 @@
 /**
- * functions/bookingService.js
+ * backend/bookingService.js
  * ──────────────────────────────────────────────────────────────────
  * Booking-related backend logic for the RETRET Hotel Cloud Functions.
  *
@@ -9,7 +9,7 @@
  *   checkAvailability(roomId, checkin, checkout) – queries existing bookings
  *                                                for date overlap
  *
- * Used by functions/index.js.
+ * Used by backend/index.js.
  * ──────────────────────────────────────────────────────────────────
  */
 
